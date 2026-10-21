@@ -1,0 +1,16 @@
+{
+  "research_title": "An Explainable Dynamic Graph Learning Framework for Adaptive Financial Fraud Detection under Concept Drift",
+  "baseline_validation_pr_auc": 0.5528777416,
+  "graph_validation_pr_auc": 0.39230490631900694,
+  "graph_validation_roc_auc": 0.8508405331639067,
+  "mean_sequential_adaptation_pr_auc_gain": 0.07616217781974494,
+  "block_5_fixed_pr_auc": 0.4865291438042715,
+  "block_5_adaptive_pr_auc": 0.6227658758026082,
+  "evaluation_note": "Sequential adaptation evaluation: earlier block labels are used only for later blocks. Do not describe the full sequence as an untouched heldout evaluation.",
+  "limitations": [
+    "The current graph model is a learned historical aggregation prototype, not a complete dynamic temporal GNN.",
+    "The current adaptation schedule is block-based, not PSI-triggered.",
+    "Feature distribution changes alone do not establish concept drift.",
+    "Graph prototype validation performance is below the XGBoost baseline."
+  ]
+}

@@ -1,0 +1,71 @@
+================================================================================
+CURRENT FILES IN PROJECT: major project
+Location: C:\Users\Shiva\Desktop\major project\fraud_detection_website_files
+================================================================================
+
+1. Research Artifacts:
+   - A_all_32_transaction_extended.json (13,467,277 bytes): Trained XGBoost model artifact (2038 trees, best iteration 1937).
+   - feature_columns.json (345 bytes): List of 32 required feature names in expected order.
+   - feature_preprocessing.npz (909 bytes): NumPy archive containing medians, means, and stds for all 32 features.
+   - explainability_feature_importance.csv (579 bytes): Mean absolute SHAP contribution ranking across features.
+   - concept_drift_psi_summary.csv (346 bytes): 5-block PSI drift summary across all features.
+   - final_drift_summary_excluding_time.csv (300 bytes): 5-block PSI drift summary excluding TransactionDT.
+   - final_model_comparison.csv (217 bytes): Validation PR-AUC & ROC-AUC comparing XGBoost baseline vs Graph prototype.
+   - fixed_vs_retrained_adaptive_results.csv (784 bytes): Block 1-5 sequential adaptation results comparing fixed vs retrained models.
+   - final_research_summary.json (982 bytes): Research summary, sequential gains (+7.6%), and documented study limitations.
+   - sample_prediction_input.csv: Ready-to-use 5-row test CSV containing valid model features.
+   - run_backend.py: Root launcher script for the FastAPI backend.
+
+2. Backend Implementation (FastAPI):
+   - backend/
+     - app/
+       - main.py: FastAPI entry point with CORS, logging, exception handlers, and lifespan loading.
+       - core/config.py: Configuration settings & dynamic artifact path resolver.
+       - schemas/prediction.py: Pydantic request and response schemas for all endpoints.
+       - services/:
+         - model_service.py: Singleton model inference service with native TreeSHAP local attribution.
+         - preprocessing_service.py: Schema validation, median imputation, and z-score standardization.
+         - explainability_service.py: Global TreeSHAP importance ranking loader.
+         - drift_service.py: Historical PSI concept drift statistics loader.
+         - research_service.py: Benchmark comparison and sequential adaptation loader.
+       - api/routes/:
+         - health.py: GET /api/health
+         - predict.py: POST /api/predict, POST /api/predict/batch, POST /api/predict/csv, GET /api/model/sample-transaction
+         - explainability.py: GET /api/explainability/feature-importance, POST /api/explainability/local
+         - monitoring.py: GET /api/monitoring/drift
+         - model_info.py: GET /api/model/info
+       - static/: Embedded Vite production build served at http://127.0.0.1:8000/
+       - utils/logging_config.py: Structured console logging without leaking internal paths.
+     - tests/test_api.py: Automated test suite with 15 passing tests.
+     - requirements.txt: Python dependency requirements.
+     - .env.example: Environment variable template.
+     - .gitignore: Git ignore configuration.
+     - README.md: Comprehensive technical documentation and PowerShell guide.
+
+3. Frontend Implementation (React + Vite + TypeScript):
+   - frontend/
+     - src/
+       - components/
+         - Header.tsx: Sticky header with active model, status indicator, and Swagger link.
+         - Sidebar.tsx: Responsive sidebar with navigation, brand mark, and API badge.
+       - pages/
+         - OverviewPage.tsx: System health, PR-AUC & ROC-AUC benchmarks, top features preview.
+         - FraudDetectionPage.tsx: 32-feature single transaction inference with TreeSHAP waterfall.
+         - BatchAnalysisPage.tsx: Drag-and-drop CSV upload, batch scoring, and downloadable CSV.
+         - ExplainabilityPage.tsx: Global TreeSHAP horizontal bar chart & all 32 feature rankings.
+         - ConceptDriftPage.tsx: 5-block PSI drift table & chart (All Features vs. Excl. Time).
+         - ModelEvaluationPage.tsx: XGBoost vs. Graph Prototype comparison & sequential adaptation (+7.6%).
+         - AboutResearchPage.tsx: Comprehensive academic thesis documentation & roadmap.
+       - services/
+         - api.ts: Centralized Axios client connecting to FastAPI /api endpoints with type safety.
+       - types/
+         - api.ts: TypeScript interfaces matching FastAPI Pydantic schemas.
+       - App.tsx: Main application layout, routing, and health polling.
+       - index.css: Tailwind directives & custom dark scrollbar styles.
+       - main.tsx: React DOM entry point.
+     - dist/: Compiled production bundle.
+     - tailwind.config.js: Custom dark fintech palette and typography configuration.
+     - vite.config.ts: Vite dev server with /api proxy to http://127.0.0.1:8000.
+     - package.json: React 19, TypeScript, Tailwind CSS, Recharts, Lucide React, Axios.
+     - .env & .env.example: Frontend environment configuration.
+     - README.md: Frontend setup and run guide.

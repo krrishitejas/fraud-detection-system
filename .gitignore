@@ -1,0 +1,41 @@
+# ---------------------------------------------------------------------------
+# Node. The front end packages are 208 MB across 14,160 files and are rebuilt
+# from package-lock.json with `npm install`.
+# ---------------------------------------------------------------------------
+node_modules/
+
+# The front end build output. The copy the service actually serves is
+# backend/app/static and that one IS committed, because without it the service
+# starts with no user interface. frontend/dist is the same bundle again.
+frontend/dist/
+
+# ---------------------------------------------------------------------------
+# Python
+# ---------------------------------------------------------------------------
+__pycache__/
+*.py[cod]
+.pytest_cache/
+.venv/
+venv/
+
+# ---------------------------------------------------------------------------
+# Secrets and local configuration. The templates (.env.example) are committed.
+# ---------------------------------------------------------------------------
+.env
+*.key
+*.pem
+
+# ---------------------------------------------------------------------------
+# Editor and operating system clutter
+# ---------------------------------------------------------------------------
+.DS_Store
+.idea/
+.vscode/
+
+# ---------------------------------------------------------------------------
+# The IEEE-CIS competition data is never committed. It is 677 MB and the
+# competition licence does not allow redistribution. Download it from Kaggle.
+# ---------------------------------------------------------------------------
+train_transaction.csv
+train_identity.csv
+test_*.csv

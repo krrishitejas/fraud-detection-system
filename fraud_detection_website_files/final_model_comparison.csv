@@ -1,0 +1,3 @@
+model,validation_pr_auc,validation_roc_auc,status
+XGBoost transaction-only baseline,0.5528777416,0.9112439749,Baseline
+Learned multi-entity aggregation prototype,0.39230490631900694,0.8508405331639067,Graph prototype
