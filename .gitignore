@@ -39,3 +39,11 @@ venv/
 train_transaction.csv
 train_identity.csv
 test_*.csv
+
+# ---------------------------------------------------------------------------
+# The decision store. The serving bundle beside it (serving_config.json and
+# category_encoding.json) IS committed, because the service cannot start its
+# contract endpoint without it. The SQLite file is runtime data: it is created
+# on first start and belongs to whoever is running the service.
+# ---------------------------------------------------------------------------
+fraud_detection_website_files/serving/*.sqlite3
