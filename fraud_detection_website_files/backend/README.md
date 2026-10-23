@@ -16,6 +16,50 @@ This backend serves the verified **32-feature XGBoost baseline model** trained d
 - **Preprocessing Pipeline**: Dedicated validation, median-based missing value imputation, and z-score standardization derived strictly from the training dataset.
 - **Interactive Web Interface**: Embedded dashboard served directly at `http://localhost:8000/` featuring single prediction, CSV batch upload, SHAP charts, drift tables, and Swagger documentation at `/docs`.
 
+### Two generations of endpoint, and why both exist
+
+`POST /api/predict` and its batch and CSV siblings take a prepared 32-number feature
+vector and answer with a label. They are what the dashboard's batch pages use and they
+are unchanged.
+
+`POST /api/model/predict` is the **Week 4 interface contract**, implemented after the
+Week 8 review tabulated eight places where this service and that contract disagreed:
+the path, the payload shape, where encoding happens, whether calibration is applied,
+whether the cutoff is a record or a constant, whether versions are returned, whether a
+version mismatch is detectable, and whether anything is stored. The review recommended
+changing the service rather than the contract, and that is what the newer endpoint is.
+
+| | Older `POST /api/predict` | `POST /api/model/predict` |
+|---|---|---|
+| Takes | 32 prepared numbers | a payment, with text categories |
+| Encoding | the caller's problem | done on the server, from the bundle |
+| Calibration | none | Platt, fitted on the first half of validation |
+| Cutoff | constant in `config.py` | a record, with its model, scale, costs and approver |
+| Versions in the response | model identifier only | model **and** preprocessing |
+| Version mismatch | undetectable | `409`, never a best-effort score |
+| Rules | not run | run beside the model |
+| Afterwards | nothing stored | the decision is written down |
+| Outcomes | fraud / legitimate | FRAUD / REVIEW / LEGITIMATE |
+
+### The serving bundle
+
+The newer endpoint reads its decision policy from `../serving/serving_config.json`
+rather than from constants in `config.py`. That file is generated from the real dataset
+by `WEEK 8/scripts/build_serving_bundle.py` and holds the model version, the
+preprocessing version, the Platt coefficients, the threshold with the cost assumption
+and split it was chosen on, the cost sweep from 1x to 50x, and the measured rule table.
+
+This is not ceremony. The cutoff for the model this service ran before the current one
+sat near **0.50**; for the current one it is an order of magnitude lower, because the
+old model weighted the fraud class up by 27.41 and that inflates every score. Had the
+value stayed a constant in the code, swapping the model in would have cut recall from
+0.63 to 0.33 and let roughly 930 more frauds through out of 88,081 — with nothing
+crashing, no test failing and nothing logged. **A cutoff belongs to one trained model
+and to the score scale it was chosen on**, so it is stored with both.
+
+Without the bundle the service still starts: the older endpoints work as before and the
+contract endpoint answers `503 NO_ACTIVE_MODEL` until the bundle is generated.
+
 ---
 
 ## 2. Directory Structure
@@ -29,20 +73,26 @@ backend/
 │   │   │   ├── health.py              # GET /api/health
 │   │   │   ├── model_info.py          # GET /api/model/info
 │   │   │   ├── monitoring.py          # GET /api/monitoring/drift
+│   │   │   ├── model_predict.py       # POST /api/model/predict and the governance reads
 │   │   │   └── predict.py             # POST /api/predict, POST /api/predict/batch, POST /api/predict/csv
 │   │   └── __init__.py
 │   ├── core/
 │   │   ├── config.py                  # Pydantic Settings & path resolver
 │   │   └── __init__.py
 │   ├── schemas/
+│   │   ├── contract.py                # Week 4 contract request & response shapes
 │   │   ├── prediction.py              # Pydantic request & response schemas
 │   │   └── __init__.py
 │   ├── services/
+│   │   ├── codec_service.py           # Raw payment -> prepared row, encoding on the server
 │   │   ├── drift_service.py           # Historical PSI summaries (with & without time)
 │   │   ├── explainability_service.py  # Global TreeSHAP feature ranking
 │   │   ├── model_service.py           # Singleton XGBoost loader & TreeSHAP runner
 │   │   ├── preprocessing_service.py   # Validation, median imputation, standardization
+│   │   ├── registry_service.py        # The serving bundle: model, calibration, cutoff, rules
 │   │   ├── research_service.py        # Model comparisons & sequential adaptation results
+│   │   ├── rules_service.py           # The rule engine that runs beside the model
+│   │   ├── store_service.py           # prediction and audit_event tables (SQLite)
 │   │   └── __init__.py
 │   ├── static/
 │   │   └── index.html                 # Complete interactive research web interface
@@ -52,6 +102,8 @@ backend/
 │   ├── __init__.py
 │   └── main.py                        # Application entry point & lifespan manager
 ├── tests/
+│   ├── test_api.py                    # the older endpoints
+│   └── test_contract.py               # the Week 4 contract, rule by rule
 │   ├── __init__.py
 │   └── test_api.py                    # 15 automated pytest tests
 ├── .env.example                       # Environment variables template
