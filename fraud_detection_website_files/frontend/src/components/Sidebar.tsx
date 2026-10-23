@@ -14,6 +14,7 @@ import {
   ExternalLink,
 } from 'lucide-react';
 import type { HealthResponse } from '../types/api';
+import { Mark } from './Mark';
 
 export type TabId =
   | 'overview'
@@ -72,12 +73,10 @@ export const Sidebar: React.FC<SidebarProps> = ({
         {/* Brand Header */}
         <div className="p-5 border-b border-line flex items-center justify-between">
           <div className="flex items-center space-x-3">
-            <div className="w-10 h-10 rounded-xl bg-brand-600 flex items-center justify-center">
-              <ShieldAlert className="w-5 h-5 text-white stroke-[2.5]" />
-            </div>
+            <Mark className="w-9 h-9 shrink-0" />
             <div>
               <div className="font-bold text-base tracking-tight text-ink-900 flex items-center gap-1.5">
-                AdaptiveFraud<span className="text-brand-600 font-mono text-xs px-1.5 py-0.5 rounded bg-brand-600/10 border border-brand-600/30">AI</span>
+                AdaptiveFraud
               </div>
               <p className="text-[11px] text-ink-500 font-medium">Major Academic Project</p>
             </div>
@@ -104,11 +103,11 @@ export const Sidebar: React.FC<SidebarProps> = ({
                 }}
                 className={`w-full flex items-center space-x-3 px-3.5 py-2.5 rounded-lg text-sm font-medium transition-colors duration-150 ${
                   isActive
-                    ? 'bg-brand-600/10 text-brand-600 border border-brand-600/25 shadow-card'
+                    ? 'bg-ink-900/10 text-data-700 border border-ink-900/25 shadow-card'
                     : 'text-ink-500 hover:text-ink-800 hover:bg-surface-hover/60 border border-transparent'
                 }`}
               >
-                <Icon className={`w-4 h-4 ${isActive ? 'text-brand-600' : 'text-ink-500'}`} />
+                <Icon className={`w-4 h-4 ${isActive ? 'text-data-700' : 'text-ink-500'}`} />
                 <span className="truncate">{item.label}</span>
               </button>
             );
@@ -122,8 +121,8 @@ export const Sidebar: React.FC<SidebarProps> = ({
             <div
               className={`inline-flex items-center gap-1.5 px-2 py-0.5 rounded-full font-mono text-[11px] border ${
                 isHealthy
-                  ? 'bg-positive-600/10 text-positive-700 border-positive-600/30'
-                  : 'bg-danger-600/10 text-danger-600 border-danger-600/30'
+                  ? 'bg-clear-50 text-clear-700 border-clear-100'
+                  : 'bg-flag-600/10 text-flag-600 border-flag-600/30'
               }`}
             >
               {isHealthy ? (
@@ -165,7 +164,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
             href="/docs"
             target="_blank"
             rel="noopener noreferrer"
-            className="flex items-center justify-between w-full px-3 py-2 text-xs font-medium text-ink-500 hover:text-brand-600 bg-surface-hover/40 hover:bg-surface-hover rounded-md border border-line transition-colors"
+            className="flex items-center justify-between w-full px-3 py-2 text-xs font-medium text-ink-500 hover:text-data-700 bg-surface-hover/40 hover:bg-surface-hover rounded-md border border-line transition-colors"
           >
             <span>FastAPI Docs (Swagger)</span>
             <ExternalLink className="w-3.5 h-3.5 text-ink-500" />

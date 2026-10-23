@@ -1,76 +1,75 @@
 /** @type {import('tailwindcss').Config} */
 
 /*
- * The light design system.
+ * Ledger.
  *
- * The tokens are named for the job they do, not for the colour they happen to be,
- * so a reader of a class name can tell what it is for: `surface` is something you
- * put things on, `line` separates, `ink` is text, `brand` is the product accent,
- * and positive / warning / danger carry meaning rather than decoration.
+ * The subject is a fraud analyst's scoring console, and the one fact that
+ * belongs to it and to nothing else is where its decision boundary sits: at
+ * 0.0655 on a nought-to-one scale, because fraud is 3.5% of these payments.
+ * A generic risk dashboard centres a gauge at 50. This one's line is at 6.55,
+ * and the design exists to make that asymmetry readable.
  *
- * Every ink shade used for text clears WCAG AA on the surface it is meant for:
- * ink-700 on white is 10.4:1, ink-500 on white is 4.9:1, and brand-600 on white is
- * 5.2:1. That matters more than usual here, because a fraud decision is something a
- * person has to read and act on.
+ * So the palette is ledger stock rather than the slate-and-blue kit every
+ * dashboard wears: a cool pale green-grey paper, a dark olive ink, and one
+ * signal colour that means ONE thing. `flag` is used where a payment is above
+ * the cutoff and nowhere else -- not on navigation, not on headings, not on a
+ * button that happens to be primary. When a reader sees it, something crossed
+ * the line.
+ *
+ * Every ink shade used for text clears WCAG AA on the surface it is meant for.
  */
 export default {
-  content: [
-    "./index.html",
-    "./src/**/*.{js,ts,jsx,tsx}",
-  ],
+  content: ['./index.html', './src/**/*.{js,ts,jsx,tsx}'],
   theme: {
     extend: {
       colors: {
         surface: {
-          page:   '#f5f7fb',   // the page behind everything
-          card:   '#ffffff',   // panels, cards, the sidebar
-          sunken: '#eef2f8',   // insets, code blocks, table headers
-          hover:  '#e8eef7',   // hover and secondary fills
-          active: '#dde6f2',   // pressed and selected fills
+          page:   '#EFF2EC',   // ledger stock
+          card:   '#FBFCF9',   // panels, the sidebar
+          sunken: '#E6EBE0',   // insets, table heads, code
+          hover:  '#E1E7DA',
+          active: '#D6DECC',
         },
         line: {
-          DEFAULT: '#e9edf4',  // panels and separators: ~1.15:1 on white
-          strong:  '#cbd6e6',  // controls only, where an edge must be findable
+          DEFAULT: '#DFE4D8',  // ruling: a whisper, ~1.15:1 on paper
+          strong:  '#C3CCB6',  // controls, where an edge must be findable
         },
         ink: {
-          900: '#0f172a',      // headings
-          800: '#1e293b',      // strong body
-          700: '#334155',      // body
-          600: '#475569',      // secondary body
-          500: '#5b6b82',      // labels, captions (4.9:1 on white)
-          400: '#6b7a91',      // the quietest readable text (4.5:1 on white)
+          900: '#1C2117',      // headings. A chosen dark, not #111
+          800: '#2B3224',
+          700: '#3D4634',      // body
+          600: '#4E5944',
+          500: '#5A6353',      // labels (4.9:1 on paper)
+          400: '#606957',      // the quietest readable text: 4.5:1 on paper,
+                               // on the page ground and on a sunken inset
         },
-        brand: {
-          50:  '#eef4ff',
-          100: '#dbe6fe',
-          200: '#c3d6fd',
-          500: '#3b6fe0',
-          600: '#2457c9',      // default accent for text and icons
-          700: '#1b44a3',      // accent text on a tinted background
-        },
-        positive: { 50: '#ecfdf5', 100: '#d1fae5', 500: '#10b981', 600: '#059669', 700: '#047857' },
-        warning:  { 50: '#fffbeb', 100: '#fef3c7', 500: '#f59e0b', 600: '#b45309', 700: '#92400e' },
-        danger:   { 50: '#fef2f2', 100: '#fee2e2', 500: '#ef4444', 600: '#dc2626', 700: '#b91c1c' },
-        violet:   { 50: '#f5f3ff', 100: '#ede9fe', 500: '#8b5cf6', 600: '#7c3aed', 700: '#6d28d9' },
-        teal:     { 50: '#f0fdfa', 100: '#ccfbf1', 500: '#14b8a6', 600: '#0d9488', 700: '#0f766e' },
+        // Over the line. Nothing else may use it.
+        flag:  { 50: '#FBEDE9', 100: '#F6DBD3', 500: '#C9442C', 600: '#B3301A', 700: '#8F2614' },
+        // The review band: neither approved nor held.
+        hold:  { 50: '#FAF4E4', 100: '#F3E8C8', 500: '#A8841C', 600: '#8A6A12', 700: '#6B520C' },
+        // Approved. Deliberately quiet: most payments are fine and the screen
+        // should not celebrate each one.
+        clear: { 50: '#EDF2E9', 100: '#DCE6D4', 500: '#5C7A48', 600: '#476034', 700: '#374C28' },
+        // One hue for data, on the main series only.
+        data:  { 50: '#E7EFF5', 100: '#CFE0EC', 500: '#2277AD', 600: '#1C6494', 700: '#164E73' },
+      },
+      fontFamily: {
+        // Archivo for the interface: a grotesque with industrial character and
+        // a real weight range, which Inter does not have the voice for.
+        sans: ['Archivo', 'system-ui', '-apple-system', 'sans-serif'],
+        // Plex Mono for every figure and identifier. Plex was drawn for data.
+        mono: ['"IBM Plex Mono"', 'ui-monospace', 'SFMono-Regular', 'monospace'],
       },
       fontSize: {
-        // 13px, not Tailwind's 12px. An app screen is read for eight hours;
-        // the inspector measured 72% of this screen under 13px, which is
-        // subline size being used for the data itself.
+        // 13px, not Tailwind's 12px: this screen is read for hours.
         xs: ['0.8125rem', { lineHeight: '1.15rem' }],
         sm: ['0.875rem', { lineHeight: '1.3rem' }],
       },
-      fontFamily: {
-        sans: ['Inter', 'system-ui', '-apple-system', 'sans-serif'],
-        mono: ['JetBrains Mono', 'ui-monospace', 'SFMono-Regular', 'monospace'],
-      },
       boxShadow: {
-        // Light themes separate with elevation, not with glow.
-        card:    '0 1px 2px rgba(15, 23, 42, 0.04), 0 1px 3px rgba(15, 23, 42, 0.06)',
-        raised:  '0 2px 4px rgba(15, 23, 42, 0.04), 0 6px 16px rgba(15, 23, 42, 0.08)',
-        overlay: '0 12px 32px rgba(15, 23, 42, 0.14)',
-        focus:   '0 0 0 3px rgba(36, 87, 201, 0.18)',
+        // Paper separates by tone, not by shadow. Only what floats casts one.
+        card:    '0 1px 0 rgba(28, 33, 23, 0.03)',
+        overlay: '0 12px 32px rgba(28, 33, 23, 0.16)',
+        focus:   '0 0 0 3px rgba(62, 110, 150, 0.22)',
       },
     },
   },

@@ -1,14 +1,18 @@
+/* Archivo for the interface, IBM Plex Mono for every figure and identifier.
+   Self-hosted would be better for a real deployment; this is the project's
+   demonstration build and the fonts are fetched once and cached. */
+@import url('https://fonts.googleapis.com/css2?family=Archivo:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600&display=swap');
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
 
 /*
- * Base styles for the light theme.
+ * Ledger: base styles.
  *
- * The colour system lives in tailwind.config.js; this file sets only what a
- * utility class cannot: the document background, the typeface, and the handful of
- * browser surfaces (scrollbars, selection, focus rings) that have to be declared
- * once at the root.
+ * The colour system lives in tailwind.config.js. This file sets only what a
+ * utility class cannot: the paper, the typeface, and the browser surfaces that
+ * have to be declared once at the root.
  */
 
 :root {
@@ -21,24 +25,38 @@ html {
 
 body {
   margin: 0;
-  font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-  background-color: #f5f7fb;
-  color: #334155;
+  font-family: 'Archivo', system-ui, -apple-system, sans-serif;
+  background-color: #EFF2EC;
+  color: #3D4634;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
 }
 
-::selection {
-  background: #dbe6fe;
-  color: #0f172a;
+/* Figures keep their width, so a number that updates does not shift the column
+   it sits in. Every figure here is set in the mono face, so one rule covers it. */
+.font-mono,
+table,
+th,
+td {
+  font-variant-numeric: tabular-nums;
 }
 
-/* A visible focus ring on every interactive element, always. A fraud dashboard is
-   operated with a keyboard as often as with a mouse. */
+/* Display type is set tighter than text. Archivo has the width to carry it. */
+h1, h2 {
+  letter-spacing: -0.02em;
+}
+
+::selection {
+  background: #CFE0EC;
+  color: #1C2117;
+}
+
+/* A visible focus ring on everything interactive. A fraud queue is worked with
+   a keyboard at least as often as with a mouse. */
 :where(a, button, input, select, textarea, [tabindex]):focus-visible {
-  outline: 2px solid #2457c9;
+  outline: 2px solid #1C6494;
   outline-offset: 2px;
-  border-radius: 6px;
+  border-radius: 4px;
 }
 
 ::-webkit-scrollbar {
@@ -47,35 +65,24 @@ body {
 }
 
 ::-webkit-scrollbar-track {
-  background: #eef2f8;
+  background: #E6EBE0;
 }
 
 ::-webkit-scrollbar-thumb {
-  background: #cbd6e6;
-  border: 2px solid #eef2f8;
+  background: #C3CCB6;
+  border: 2px solid #E6EBE0;
   border-radius: 6px;
 }
 
 ::-webkit-scrollbar-thumb:hover {
-  background: #94a3b8;
+  background: #6E7767;
 }
 
-/* Figures keep their width, so a number that updates does not shift the
-   column it sits in. Every figure on this dashboard is set in the mono face,
-   so one rule covers the lot. */
-.font-mono,
-table,
-th,
-td {
-  font-variant-numeric: tabular-nums;
-}
-
-/* Recharts draws its own text nodes; keep them on the ink ramp rather than the
-   browser default black. */
+/* Recharts draws its own text nodes; keep them on the ink ramp. */
 .recharts-cartesian-axis-tick-value,
 .recharts-legend-item-text {
-  fill: #64748b;
-  color: #64748b !important;
+  fill: #5A6353;
+  color: #5A6353 !important;
   font-size: 11px;
 }
 

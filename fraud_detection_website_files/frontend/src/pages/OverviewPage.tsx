@@ -119,7 +119,7 @@ export const OverviewPage: React.FC<OverviewPageProps> = ({ onNavigate }) => {
           <div className="flex flex-wrap gap-2 shrink-0">
             <button
               onClick={() => onNavigate('fraud-detection')}
-              className="inline-flex items-center gap-2 px-4 py-2 rounded-md text-xs font-semibold bg-brand-600 text-white hover:bg-brand-700 transition-colors"
+              className="inline-flex items-center gap-2 px-4 py-2 rounded-md text-xs font-semibold bg-ink-900 text-surface-card hover:bg-ink-800 transition-colors"
             >
               <ShieldAlert className="w-4 h-4" />
               <span>Score a payment</span>
@@ -146,7 +146,7 @@ export const OverviewPage: React.FC<OverviewPageProps> = ({ onNavigate }) => {
 
       {/* Error alert if backend offline */}
       {error && (
-        <div className="rounded-xl bg-danger-600/10 border border-danger-600/30 p-4 text-sm text-danger-600 flex items-start gap-3">
+        <div className="rounded-xl bg-flag-600/10 border border-flag-600/30 p-4 text-sm text-flag-600 flex items-start gap-3">
           <AlertCircle className="w-5 h-5 flex-shrink-0 mt-0.5" />
           <div className="space-y-1">
             <p className="font-semibold">Backend Connection Issue</p>
@@ -172,7 +172,7 @@ export const OverviewPage: React.FC<OverviewPageProps> = ({ onNavigate }) => {
               quoting it here would flatter the model with its own training. */}
           <div className="text-xs text-ink-600 flex items-center justify-between pt-1 border-t border-line">
             <span>Held-out PR-AUC:</span>
-            <span className="font-mono tabular-nums text-brand-700 font-semibold">
+            <span className="font-mono tabular-nums text-data-700 font-semibold">
               {modelInfo?.served_model?.held_out_pr_auc?.toFixed(4) ?? '—'}
             </span>
           </div>
@@ -203,7 +203,7 @@ export const OverviewPage: React.FC<OverviewPageProps> = ({ onNavigate }) => {
           <div className="flex items-center justify-between text-ink-500">
             <span className="text-xs font-medium text-ink-600">Adaptation Gain</span>
           </div>
-          <div className="text-xl font-bold text-positive-700 font-mono tracking-tight">
+          <div className="text-xl font-bold text-clear-700 font-mono tracking-tight">
             +
             {(
               (modelInfo?.sequential_adaptation_summary?.mean_sequential_adaptation_pr_auc_gain ?? 0.0762) *
@@ -227,7 +227,7 @@ export const OverviewPage: React.FC<OverviewPageProps> = ({ onNavigate }) => {
           </div>
           <div className="text-xs text-ink-500 flex items-center justify-between pt-1 border-t border-line">
             <span>Non-Temporal Drift:</span>
-            <span className="text-positive-700 font-medium">Stable</span>
+            <span className="text-clear-700 font-medium">Stable</span>
           </div>
         </div>
       </div>
@@ -243,7 +243,7 @@ export const OverviewPage: React.FC<OverviewPageProps> = ({ onNavigate }) => {
             </div>
             <button
               onClick={() => onNavigate('model-evaluation')}
-              className="text-xs text-brand-600 hover:underline flex items-center gap-1 font-medium"
+              className="text-xs text-data-700 hover:underline flex items-center gap-1 font-medium"
             >
               <span>Full Details</span>
               <ArrowRight className="w-3 h-3" />
@@ -297,7 +297,7 @@ export const OverviewPage: React.FC<OverviewPageProps> = ({ onNavigate }) => {
             </div>
             <button
               onClick={() => onNavigate('explainability')}
-              className="text-xs text-brand-600 hover:underline flex items-center gap-1 font-medium"
+              className="text-xs text-data-700 hover:underline flex items-center gap-1 font-medium"
             >
               <span>View All 32</span>
               <ArrowRight className="w-3 h-3" />
@@ -347,9 +347,9 @@ export const OverviewPage: React.FC<OverviewPageProps> = ({ onNavigate }) => {
 
           <div className="p-3 rounded-lg bg-surface-page/80 border border-line text-xs text-ink-500">
             <span className="font-semibold text-ink-800">Interpretability Note:</span> Features{' '}
-            <code className="text-brand-600 font-mono">C5</code>,{' '}
-            <code className="text-brand-600 font-mono">C13</code>, and{' '}
-            <code className="text-brand-600 font-mono">TransactionAmt</code> hold the largest decision weight.
+            <code className="text-data-700 font-mono">C5</code>,{' '}
+            <code className="text-data-700 font-mono">C13</code>, and{' '}
+            <code className="text-data-700 font-mono">TransactionAmt</code> hold the largest decision weight.
             TreeSHAP describes tree split attributions, not real-world causal fraud mechanisms.
           </div>
         </div>
@@ -366,7 +366,7 @@ export const OverviewPage: React.FC<OverviewPageProps> = ({ onNavigate }) => {
           </div>
           <button
             onClick={() => onNavigate('concept-drift')}
-            className="text-xs text-brand-600 hover:underline flex items-center gap-1 font-medium"
+            className="text-xs text-data-700 hover:underline flex items-center gap-1 font-medium"
           >
             <span>PSI Drift Analysis</span>
             <ArrowRight className="w-3 h-3" />
@@ -403,7 +403,7 @@ export const OverviewPage: React.FC<OverviewPageProps> = ({ onNavigate }) => {
                     {/* Colour says good or bad, so a gain of zero is grey. */}
                     <td
                       className={`py-2.5 px-3 font-semibold text-right tabular-nums ${
-                        (row.pr_auc_gain ?? 0) > 0 ? 'text-positive-700' : 'text-ink-600'
+                        (row.pr_auc_gain ?? 0) > 0 ? 'text-clear-700' : 'text-ink-600'
                       }`}
                     >
                       {(row.pr_auc_gain ?? 0) > 0 ? '+' : ''}

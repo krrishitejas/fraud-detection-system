@@ -61,7 +61,7 @@ export const ConceptDriftPage: React.FC = () => {
         <div className="flex items-start justify-between flex-wrap gap-4">
           <div className="space-y-1.5 max-w-2xl">
             <h3 className="text-sm font-bold text-ink-900 flex items-center gap-2">
-              <Activity className="w-4 h-4 text-brand-600" />
+              <Activity className="w-4 h-4 text-data-700" />
               <span>Population Stability Index (PSI) Drift Analysis</span>
             </h3>
             <p className="text-xs text-ink-700 leading-relaxed">
@@ -82,7 +82,7 @@ export const ConceptDriftPage: React.FC = () => {
       </div>
 
       {error && (
-        <div className="rounded-lg bg-danger-600/10 border border-danger-600/30 p-3.5 text-xs text-danger-600 flex items-start gap-2">
+        <div className="rounded-lg bg-flag-600/10 border border-flag-600/30 p-3.5 text-xs text-flag-600 flex items-start gap-2">
           <AlertTriangle className="w-4 h-4 flex-shrink-0 mt-0.5" />
           <span>{error}</span>
         </div>
@@ -92,25 +92,25 @@ export const ConceptDriftPage: React.FC = () => {
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         <div className="rounded-xl bg-surface-card border border-line p-5 shadow-card space-y-3">
           <h4 className="text-sm font-bold text-ink-900 flex items-center gap-2">
-            <Info className="w-4 h-4 text-brand-600" />
+            <Info className="w-4 h-4 text-data-700" />
             <span>Temporal Distortion vs. Genuine Shift</span>
           </h4>
           <p className="text-xs text-ink-700 leading-relaxed">
             When all features are evaluated together, the mean PSI appears high (~0.40). However, this is driven almost
-            entirely by <code className="text-brand-600 font-mono">TransactionDT</code>, a timestamp feature that
+            entirely by <code className="text-data-700 font-mono">TransactionDT</code>, a timestamp feature that
             monotonically increases with every new transaction block.
           </p>
           <div className="p-3 rounded-lg bg-surface-page border border-line text-xs text-ink-700 leading-relaxed">
-            <strong className="text-positive-700">When TransactionDT is excluded:</strong> The feature distributions
+            <strong className="text-clear-700">When TransactionDT is excluded:</strong> The feature distributions
             remain remarkably stable across all 5 chronological blocks, with median PSI between{' '}
-            <span className="font-mono text-positive-700">0.0071</span> and{' '}
-            <span className="font-mono text-positive-700">0.0246</span>, and at most 1 feature showing PSI &ge; 0.10.
+            <span className="font-mono text-clear-700">0.0071</span> and{' '}
+            <span className="font-mono text-clear-700">0.0246</span>, and at most 1 feature showing PSI &ge; 0.10.
           </div>
         </div>
 
-        <div className="rounded-xl bg-surface-card border border-warning-600/30 p-5 shadow-card space-y-3">
+        <div className="rounded-xl bg-surface-card border border-hold-600/30 p-5 shadow-card space-y-3">
           <h4 className="text-sm font-bold text-ink-900 flex items-center gap-2">
-            <AlertTriangle className="w-4 h-4 text-warning-600" />
+            <AlertTriangle className="w-4 h-4 text-hold-600" />
             <span>Offline Research Experiment &bull; Not Live Streaming</span>
           </h4>
           <p className="text-xs text-ink-700 leading-relaxed">
@@ -179,9 +179,9 @@ export const ConceptDriftPage: React.FC = () => {
                 <th className="py-2.5 px-3">Median PSI (All)</th>
                 <th className="py-2.5 px-3">Mean PSI (All)</th>
                 <th className="py-2.5 px-3">PSI &ge; 0.10 (All)</th>
-                <th className="py-2.5 px-3 text-positive-700">Median PSI (No Time)</th>
-                <th className="py-2.5 px-3 text-positive-700">Mean PSI (No Time)</th>
-                <th className="py-2.5 px-3 text-positive-700">PSI &ge; 0.10 (No Time)</th>
+                <th className="py-2.5 px-3 text-clear-700">Median PSI (No Time)</th>
+                <th className="py-2.5 px-3 text-clear-700">Mean PSI (No Time)</th>
+                <th className="py-2.5 px-3 text-clear-700">PSI &ge; 0.10 (No Time)</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-line font-mono">
@@ -194,10 +194,10 @@ export const ConceptDriftPage: React.FC = () => {
                     <td className="py-2.5 px-3 text-ink-700">{item.median_psi.toFixed(4)}</td>
                     <td className="py-2.5 px-3 text-ink-700">{item.mean_psi.toFixed(4)}</td>
                     <td className="py-2.5 px-3 text-ink-500">{item.features_psi_over_010}</td>
-                    <td className="py-2.5 px-3 text-positive-700 font-semibold">
+                    <td className="py-2.5 px-3 text-clear-700 font-semibold">
                       {noTime?.median_psi?.toFixed(4) ?? '-'}
                     </td>
-                    <td className="py-2.5 px-3 text-positive-700 font-semibold">
+                    <td className="py-2.5 px-3 text-clear-700 font-semibold">
                       {noTime?.mean_psi?.toFixed(4) ?? '-'}
                     </td>
                     <td className="py-2.5 px-3 text-ink-700 font-semibold">

@@ -134,7 +134,7 @@ export const BatchAnalysisPage: React.FC = () => {
         <div className="flex items-start justify-between flex-wrap gap-4">
           <div className="space-y-1.5 max-w-2xl">
             <h3 className="text-sm font-bold text-ink-900 flex items-center gap-2">
-              <FileSpreadsheet className="w-4 h-4 text-brand-600" />
+              <FileSpreadsheet className="w-4 h-4 text-data-700" />
               <span>Batch CSV Transaction Scoring</span>
             </h3>
             <p className="text-xs text-ink-700 leading-relaxed">
@@ -150,7 +150,7 @@ export const BatchAnalysisPage: React.FC = () => {
             onClick={handleDownloadSample}
             className="inline-flex items-center gap-1.5 px-3 py-2 rounded-lg text-xs font-medium text-ink-700 hover:text-ink-900 bg-surface-hover hover:bg-surface-active border border-line-strong transition-colors"
           >
-            <FileDown className="w-4 h-4 text-brand-600" />
+            <FileDown className="w-4 h-4 text-data-700" />
             <span>Download 32-Feature Sample CSV</span>
           </button>
         </div>
@@ -167,7 +167,7 @@ export const BatchAnalysisPage: React.FC = () => {
           onDrop={handleFileDrop}
           className={`border-2 border-dashed rounded-xl p-8 sm:p-12 text-center transition-colors ${
             dragOver
-              ? 'border-brand-600 bg-brand-600/5'
+              ? 'border-ink-900 bg-ink-900/5'
               : 'border-line bg-surface-page/50 hover:border-line'
           }`}
         >
@@ -178,7 +178,7 @@ export const BatchAnalysisPage: React.FC = () => {
             onChange={handleFileSelect}
             className="hidden"
           />
-          <div className="w-12 h-12 rounded-full bg-surface-sunken flex items-center justify-center mx-auto mb-3 text-brand-600 shadow-card">
+          <div className="w-12 h-12 rounded-full bg-surface-sunken flex items-center justify-center mx-auto mb-3 text-data-700 shadow-card">
             <UploadCloud className="w-6 h-6" />
           </div>
 
@@ -198,7 +198,7 @@ export const BatchAnalysisPage: React.FC = () => {
           </button>
 
           {file && (
-            <div className="mt-4 inline-flex items-center gap-2 px-3.5 py-1.5 rounded-lg bg-surface-sunken border border-brand-600/30 text-xs font-mono text-brand-600">
+            <div className="mt-4 inline-flex items-center gap-2 px-3.5 py-1.5 rounded-lg bg-surface-sunken border border-data-100 text-xs font-mono text-data-700">
               <FileSpreadsheet className="w-4 h-4" />
               <span>{file.name}</span>
               <span className="text-ink-500">({(file.size / 1024).toFixed(1)} KB)</span>
@@ -207,7 +207,7 @@ export const BatchAnalysisPage: React.FC = () => {
         </div>
 
         {error && (
-          <div className="rounded-lg bg-danger-600/10 border border-danger-600/30 p-3.5 text-xs text-danger-600 flex items-start gap-2">
+          <div className="rounded-lg bg-flag-600/10 border border-flag-600/30 p-3.5 text-xs text-flag-600 flex items-start gap-2">
             <AlertTriangle className="w-4 h-4 flex-shrink-0 mt-0.5" />
             <div>
               <p className="font-semibold">CSV Processing Error</p>
@@ -228,7 +228,7 @@ export const BatchAnalysisPage: React.FC = () => {
           <button
             onClick={handleScoreJson}
             disabled={!file || loading || downloading}
-            className="inline-flex items-center gap-2 px-6 py-2.5 rounded-lg text-xs font-semibold bg-brand-600 text-white hover:brightness-110 disabled:opacity-40 transition-colors shadow-card"
+            className="inline-flex items-center gap-2 px-6 py-2.5 rounded-lg text-xs font-semibold bg-ink-900 text-surface-card hover:brightness-110 disabled:opacity-40 transition-colors shadow-card"
           >
             <RefreshCw className={`w-4 h-4 ${loading ? 'animate-spin' : ''}`} />
             <span>{loading ? 'Scoring Rows...' : 'Score & View in Dashboard'}</span>
@@ -243,7 +243,7 @@ export const BatchAnalysisPage: React.FC = () => {
           <div>
             <div className="flex items-center justify-between pb-3 border-b border-line">
               <h3 className="text-base font-bold text-ink-900 flex items-center gap-2">
-                <CheckCircle2 className="w-5 h-5 text-positive-700" />
+                <CheckCircle2 className="w-5 h-5 text-clear-700" />
                 <span>Batch Evaluation Results: {results.filename}</span>
               </h3>
               <span className="text-xs font-mono text-ink-500">
@@ -258,21 +258,21 @@ export const BatchAnalysisPage: React.FC = () => {
                   {results.total_rows_scored.toLocaleString()}
                 </div>
               </div>
-              <div className="p-4 rounded-lg bg-surface-page border border-danger-600/30">
-                <div className="text-xs text-danger-600 font-mono">Predicted Fraud</div>
-                <div className="text-2xl font-bold font-mono text-danger-600 mt-1">
+              <div className="p-4 rounded-lg bg-surface-page border border-flag-600/30">
+                <div className="text-xs text-flag-600 font-mono">Predicted Fraud</div>
+                <div className="text-2xl font-bold font-mono text-flag-600 mt-1">
                   {results.fraud_count.toLocaleString()}
                 </div>
               </div>
-              <div className="p-4 rounded-lg bg-surface-page border border-positive-600/30">
-                <div className="text-xs text-positive-700 font-mono">Predicted Legitimate</div>
-                <div className="text-2xl font-bold font-mono text-positive-700 mt-1">
+              <div className="p-4 rounded-lg bg-surface-page border border-clear-600/30">
+                <div className="text-xs text-clear-700 font-mono">Predicted Legitimate</div>
+                <div className="text-2xl font-bold font-mono text-clear-700 mt-1">
                   {results.legitimate_count.toLocaleString()}
                 </div>
               </div>
-              <div className="p-4 rounded-lg bg-surface-page border border-brand-600/30">
-                <div className="text-xs text-brand-600 font-mono">Batch Fraud Rate</div>
-                <div className="text-2xl font-bold font-mono text-brand-600 mt-1">
+              <div className="p-4 rounded-lg bg-surface-page border border-data-100">
+                <div className="text-xs text-data-700 font-mono">Batch Fraud Rate</div>
+                <div className="text-2xl font-bold font-mono text-data-700 mt-1">
                   {(results.fraud_rate * 100).toFixed(2)}%
                 </div>
               </div>
@@ -292,7 +292,7 @@ export const BatchAnalysisPage: React.FC = () => {
                     setSearchTerm(e.target.value);
                     setCurrentPage(1);
                   }}
-                  className="w-full pl-9 pr-3 py-1.5 text-xs bg-surface-page border border-line rounded-lg text-ink-900 font-mono focus:outline-none focus:border-brand-600"
+                  className="w-full pl-9 pr-3 py-1.5 text-xs bg-surface-page border border-line rounded-lg text-ink-900 font-mono focus:outline-none focus:border-ink-900"
                 />
               </div>
             </div>
@@ -305,7 +305,7 @@ export const BatchAnalysisPage: React.FC = () => {
                   setRiskFilter(e.target.value);
                   setCurrentPage(1);
                 }}
-                className="px-2.5 py-1.5 text-xs bg-surface-page border border-line rounded-lg text-ink-800 font-mono focus:outline-none focus:border-brand-600"
+                className="px-2.5 py-1.5 text-xs bg-surface-page border border-line rounded-lg text-ink-800 font-mono focus:outline-none focus:border-ink-900"
               >
                 <option value="all">All Risk Tiers</option>
                 <option value="high">High Risk</option>
@@ -331,10 +331,10 @@ export const BatchAnalysisPage: React.FC = () => {
                   const isFraud = row.prediction === 'fraud';
                   const riskBadgeClass =
                     row.risk_category === 'high'
-                      ? 'bg-danger-600/10 text-danger-600 border-danger-600/30'
+                      ? 'bg-flag-600/10 text-flag-600 border-flag-600/30'
                       : row.risk_category === 'medium'
-                      ? 'bg-warning-600/10 text-warning-600 border-warning-600/30'
-                      : 'bg-positive-600/10 text-positive-700 border-positive-600/30';
+                      ? 'bg-hold-600/10 text-hold-600 border-hold-600/30'
+                      : 'bg-clear-600/10 text-clear-700 border-clear-600/30';
 
                   return (
                     <tr key={row.row_index} className="hover:bg-surface-sunken/50 transition-colors">
@@ -350,8 +350,8 @@ export const BatchAnalysisPage: React.FC = () => {
                         <span
                           className={`px-2 py-0.5 rounded text-[11px] font-bold uppercase ${
                             isFraud
-                              ? 'bg-danger-600/20 text-danger-600 border border-danger-600/30'
-                              : 'bg-positive-600/20 text-positive-700 border-positive-600/30'
+                              ? 'bg-flag-600/20 text-flag-600 border border-flag-600/30'
+                              : 'bg-clear-600/20 text-clear-700 border-clear-600/30'
                           }`}
                         >
                           {row.prediction}

@@ -12,6 +12,7 @@ import {
   Sliders,
 } from 'lucide-react';
 import { apiService, formatApiError } from '../services/api';
+import { DecisionRail } from '../components/DecisionRail';
 import type {
   CategoriesResponse,
   Classification,
@@ -110,22 +111,22 @@ const OUTCOME: Record<Classification, {
   FRAUD: {
     label: 'Flagged as fraud',
     icon: ShieldAlert,
-    tone: 'border-danger-100 bg-danger-50',
-    chip: 'bg-danger-600 text-white',
+    tone: 'border-flag-100 bg-flag-50',
+    chip: 'bg-flag-600 text-white',
     blurb: 'At or above the cutoff. This payment would be held.',
   },
   REVIEW: {
     label: 'Sent to review',
     icon: Eye,
-    tone: 'border-warning-100 bg-warning-50',
-    chip: 'bg-warning-600 text-white',
+    tone: 'border-hold-100 bg-hold-50',
+    chip: 'bg-hold-600 text-white',
     blurb: 'Below the cutoff but above the review floor, so an analyst decides.',
   },
   LEGITIMATE: {
     label: 'Approved',
     icon: ShieldCheck,
-    tone: 'border-positive-100 bg-positive-50',
-    chip: 'bg-positive-600 text-white',
+    tone: 'border-clear-100 bg-clear-50',
+    chip: 'bg-clear-600 text-white',
     blurb: 'Below the review floor. This payment would go through.',
   },
 };
@@ -220,7 +221,7 @@ export const FraudDetectionPage: React.FC = () => {
                       <select
                         value={form[f.key] ?? ''}
                         onChange={(e) => set(f.key, e.target.value)}
-                        className="mt-1 w-full px-3 py-2 text-sm rounded-md border border-line-strong bg-surface-card text-ink-800 focus:border-brand-500"
+                        className="mt-1 w-full px-3 py-2 text-sm rounded-md border border-line-strong bg-surface-card text-ink-800 focus:border-data-600"
                       >
                         <option value="">(absent)</option>
                         {options.map((v) => (
@@ -277,7 +278,7 @@ export const FraudDetectionPage: React.FC = () => {
                           <span className="text-xs text-ink-600">
                             {f.label}
                             {'required' in f && f.required && (
-                              <span className="text-danger-700"> *</span>
+                              <span className="text-flag-700"> *</span>
                             )}
                           </span>
                           <input
@@ -286,7 +287,7 @@ export const FraudDetectionPage: React.FC = () => {
                             value={form[f.key] ?? ''}
                             onChange={(e) => set(f.key, e.target.value)}
                             placeholder="absent"
-                            className="mt-1 w-full px-3 py-2 text-sm font-mono rounded-md border border-line-strong bg-surface-card text-ink-800 placeholder:text-ink-400 focus:border-brand-500"
+                            className="mt-1 w-full px-3 py-2 text-sm font-mono rounded-md border border-line-strong bg-surface-card text-ink-800 placeholder:text-ink-400 focus:border-data-600"
                           />
                         </label>
                       ))}
@@ -301,7 +302,7 @@ export const FraudDetectionPage: React.FC = () => {
             <button
               type="submit"
               disabled={submitting}
-              className="inline-flex items-center gap-2 px-4 py-2 rounded-md bg-brand-600 text-white text-sm font-semibold hover:bg-brand-700 disabled:opacity-60"
+              className="inline-flex items-center gap-2 px-4 py-2 rounded-md bg-ink-900 text-surface-card text-sm font-semibold hover:bg-ink-800 disabled:opacity-60"
             >
               {submitting ? (
                 <Loader2 className="w-4 h-4 animate-spin" />
@@ -328,10 +329,10 @@ export const FraudDetectionPage: React.FC = () => {
       {/* ----------------------------------------------------------- result */}
       <div className="lg:col-span-2 space-y-5">
         {error && (
-          <div className="bg-danger-50 border border-danger-100 rounded-xl p-4 flex gap-3">
-            <AlertTriangle className="w-5 h-5 text-danger-600 shrink-0 mt-0.5" />
+          <div className="bg-flag-50 border border-flag-100 rounded-xl p-4 flex gap-3">
+            <AlertTriangle className="w-5 h-5 text-flag-600 shrink-0 mt-0.5" />
             <div>
-              <p className="text-sm font-semibold text-danger-700">
+              <p className="text-sm font-semibold text-flag-700">
                 The service refused this request
               </p>
               <p className="text-xs text-ink-600 mt-1 break-words">{error}</p>
@@ -368,23 +369,15 @@ export const FraudDetectionPage: React.FC = () => {
               </div>
               <p className="text-xs text-ink-600 mt-2">{outcome.blurb}</p>
 
-              <div className="mt-4 grid grid-cols-2 gap-3">
-                <div className="bg-surface-card/80 rounded-lg p-3 border border-line">
-                  <p className="text-[11px] tracking-normal text-ink-600 font-semibold">
-                    Fraud probability
-                  </p>
-                  <p className="text-2xl font-mono font-bold text-ink-900 mt-0.5">
-                    {result.fraud_probability.toFixed(6)}
-                  </p>
-                </div>
-                <div className="bg-surface-card/80 rounded-lg p-3 border border-line">
-                  <p className="text-[11px] tracking-normal text-ink-600 font-semibold">
-                    Compared against
-                  </p>
-                  <p className="text-2xl font-mono font-bold text-ink-900 mt-0.5">
-                    {result.threshold.toFixed(6)}
-                  </p>
-                </div>
+              {/* Where this payment landed, against the line it was judged by.
+                  Two numbers side by side tell a reader which is larger; the
+                  rail tells them how close it was. */}
+              <div className="mt-5">
+                <DecisionRail
+                  threshold={result.threshold}
+                  reviewLow={result.decision.review_low}
+                  score={result.fraud_probability}
+                />
               </div>
             </section>
 
@@ -420,7 +413,7 @@ export const FraudDetectionPage: React.FC = () => {
             {/* rules */}
             <section className="bg-surface-card border border-line rounded-xl shadow-card p-5">
               <h3 className="text-sm font-semibold text-ink-900 flex items-center gap-2">
-                <ScrollText className="w-4 h-4 text-brand-600" />
+                <ScrollText className="w-4 h-4 text-data-700" />
                 Rules
                 <span className="text-xs font-normal text-ink-500">
                   {result.rules.rules_fired.length} of {result.rules.rules_evaluated} fired
@@ -442,7 +435,7 @@ export const FraudDetectionPage: React.FC = () => {
                         <code className="text-xs font-mono font-semibold text-ink-900">
                           {r.rule_name}
                         </code>
-                        <span className="text-[11px] font-mono px-2 py-0.5 rounded-full bg-danger-50 text-danger-700 border border-danger-100">
+                        <span className="text-[11px] font-mono px-2 py-0.5 rounded-full bg-flag-50 text-flag-700 border border-flag-100">
                           {r.risk_level}
                         </span>
                       </div>
@@ -509,7 +502,7 @@ export const FraudDetectionPage: React.FC = () => {
                         <div className="flex items-baseline justify-between text-xs">
                           <span className="text-ink-700">{g.group}</span>
                           <span
-                            className={`font-mono ${up ? 'text-danger-700' : 'text-positive-700'}`}
+                            className={`font-mono ${up ? 'text-flag-700' : 'text-clear-700'}`}
                           >
                             {g.contribution > 0 ? '+' : ''}
                             {g.contribution.toFixed(4)}
@@ -517,7 +510,7 @@ export const FraudDetectionPage: React.FC = () => {
                         </div>
                         <div className="h-1.5 rounded-full bg-surface-sunken mt-1 overflow-hidden">
                           <div
-                            className={`h-full rounded-full ${up ? 'bg-danger-500' : 'bg-positive-500'}`}
+                            className={`h-full rounded-full ${up ? 'bg-flag-500' : 'bg-clear-500'}`}
                             style={{ width: `${pct}%` }}
                           />
                         </div>

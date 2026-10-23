@@ -53,7 +53,7 @@ export const ExplainabilityPage: React.FC = () => {
         <div className="flex items-start justify-between flex-wrap gap-4">
           <div className="space-y-1.5 max-w-2xl">
             <h3 className="text-sm font-bold text-ink-900 flex items-center gap-2">
-              <Brain className="w-4 h-4 text-brand-600" />
+              <Brain className="w-4 h-4 text-data-700" />
               <span>TreeSHAP Feature Attribution Methodology</span>
             </h3>
             <p className="text-xs text-ink-700 leading-relaxed">
@@ -74,7 +74,7 @@ export const ExplainabilityPage: React.FC = () => {
       </div>
 
       {error && (
-        <div className="rounded-lg bg-danger-600/10 border border-danger-600/30 p-3.5 text-xs text-danger-600 flex items-start gap-2">
+        <div className="rounded-lg bg-flag-600/10 border border-flag-600/30 p-3.5 text-xs text-flag-600 flex items-start gap-2">
           <AlertCircle className="w-4 h-4 flex-shrink-0 mt-0.5" />
           <span>{error}</span>
         </div>
@@ -89,7 +89,7 @@ export const ExplainabilityPage: React.FC = () => {
               <h4 className="text-base font-bold text-ink-900">Top 15 Influential Model Features</h4>
               <p className="text-xs text-ink-500">Mean absolute TreeSHAP value |E[|SHAP|]|</p>
             </div>
-            <span className="text-xs font-mono text-brand-600 px-2 py-0.5 rounded bg-brand-600/10 border border-brand-600/30">
+            <span className="text-xs font-mono text-data-700 px-2 py-0.5 rounded bg-ink-900/10 border border-data-100">
               Total 32 Features
             </span>
           </div>
@@ -137,13 +137,13 @@ export const ExplainabilityPage: React.FC = () => {
 
           <div className="flex items-center gap-4 text-xs font-mono text-ink-500 pt-2 border-t border-line">
             <span className="flex items-center gap-1.5">
-              <span className="w-2.5 h-2.5 rounded-full bg-danger-600" /> Top 3 Features (C5, C13, TransactionAmt)
+              <span className="w-2.5 h-2.5 rounded-full bg-flag-600" /> Top 3 Features (C5, C13, TransactionAmt)
             </span>
             <span className="flex items-center gap-1.5">
-              <span className="w-2.5 h-2.5 rounded-full bg-warning-600" /> Ranks 4 - 7 (C1, C14, TransactionDT, card1)
+              <span className="w-2.5 h-2.5 rounded-full bg-hold-600" /> Ranks 4 - 7 (C1, C14, TransactionDT, card1)
             </span>
             <span className="flex items-center gap-1.5">
-              <span className="w-2.5 h-2.5 rounded-full bg-brand-600" /> Secondary Features
+              <span className="w-2.5 h-2.5 rounded-full bg-ink-900" /> Secondary Features
             </span>
           </div>
         </div>
@@ -152,7 +152,7 @@ export const ExplainabilityPage: React.FC = () => {
         <div className="lg:col-span-4 space-y-4">
           <div className="rounded-xl bg-surface-card border border-line p-5 shadow-card space-y-3">
             <h4 className="text-sm font-bold text-ink-900 flex items-center gap-2">
-              <Sparkles className="w-4 h-4 text-brand-600" />
+              <Sparkles className="w-4 h-4 text-data-700" />
               <span>Global vs. Local Explanations</span>
             </h4>
             <div className="space-y-2 text-xs text-ink-700 leading-relaxed">
@@ -168,14 +168,14 @@ export const ExplainabilityPage: React.FC = () => {
             </div>
           </div>
 
-          <div className="rounded-xl bg-surface-card border border-warning-600/30 p-5 shadow-card space-y-3">
+          <div className="rounded-xl bg-surface-card border border-hold-600/30 p-5 shadow-card space-y-3">
             <h4 className="text-sm font-bold text-ink-900 flex items-center gap-2">
-              <HelpCircle className="w-4 h-4 text-warning-600" />
+              <HelpCircle className="w-4 h-4 text-hold-600" />
               <span>Attribution is Not Causation</span>
             </h4>
             <p className="text-xs text-ink-700 leading-relaxed">
               High TreeSHAP values describe statistical decision associations within the gradient-boosted decision trees.
-              They <strong className="text-warning-600">do not imply causal mechanisms</strong> in financial criminal behavior.
+              They <strong className="text-hold-600">do not imply causal mechanisms</strong> in financial criminal behavior.
               Features such as address region (<code className="text-ink-800">addr1</code>) or email domain are indicators,
               not the root cause of fraud.
             </p>
@@ -210,14 +210,14 @@ export const ExplainabilityPage: React.FC = () => {
                 return (
                   <tr key={f.feature} className="hover:bg-surface-sunken/50 transition-colors">
                     <td className="py-2.5 px-4 text-ink-500 font-bold text-right tabular-nums">{f.rank}</td>
-                    <td className="py-2.5 px-4 text-brand-600 font-semibold">{f.feature}</td>
+                    <td className="py-2.5 px-4 text-data-700 font-semibold">{f.feature}</td>
                     <td className="py-2.5 px-4 text-ink-900 font-semibold text-right tabular-nums">
                       {f.mean_absolute_shap_contribution.toFixed(4)}
                     </td>
                     <td className="py-2.5 px-4 w-1/3">
                       <div className="h-2 w-full bg-surface-page rounded-full overflow-hidden">
                         <div
-                          className="h-full rounded-full bg-brand-600"
+                          className="h-full rounded-full bg-ink-900"
                           style={{ width: `${widthPercent}%` }}
                         />
                       </div>

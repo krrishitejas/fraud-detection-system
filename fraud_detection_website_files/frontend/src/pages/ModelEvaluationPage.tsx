@@ -68,7 +68,7 @@ export const ModelEvaluationPage: React.FC = () => {
         <div className="flex items-start justify-between flex-wrap gap-4">
           <div className="space-y-1.5 max-w-2xl">
             <h3 className="text-sm font-bold text-ink-900 flex items-center gap-2">
-              <BarChart3 className="w-4 h-4 text-brand-600" />
+              <BarChart3 className="w-4 h-4 text-data-700" />
               <span>Model Evaluation & Sequential Adaptation Benchmarks</span>
             </h3>
             <p className="text-xs text-ink-700 leading-relaxed">
@@ -89,7 +89,7 @@ export const ModelEvaluationPage: React.FC = () => {
       </div>
 
       {error && (
-        <div className="rounded-lg bg-danger-600/10 border border-danger-600/30 p-3.5 text-xs text-danger-600 flex items-start gap-2">
+        <div className="rounded-lg bg-flag-600/10 border border-flag-600/30 p-3.5 text-xs text-flag-600 flex items-start gap-2">
           <AlertTriangle className="w-4 h-4 flex-shrink-0 mt-0.5" />
           <span>{error}</span>
         </div>
@@ -104,7 +104,7 @@ export const ModelEvaluationPage: React.FC = () => {
               <h4 className="text-base font-bold text-ink-900">Validation Metric Benchmark</h4>
               <p className="text-xs text-ink-500">Precision-Recall AUC vs. ROC-AUC on Validation Split</p>
             </div>
-            <span className="text-xs font-mono text-positive-700 px-2 py-0.5 rounded bg-positive-600/10 border border-positive-600/30">
+            <span className="text-xs font-mono text-clear-700 px-2 py-0.5 rounded bg-clear-600/10 border border-clear-600/30">
               Verified Metrics
             </span>
           </div>
@@ -161,14 +161,14 @@ export const ModelEvaluationPage: React.FC = () => {
                 key={m.model}
                 className={`p-4 rounded-xl border ${
                   m.status === 'Baseline'
-                    ? 'bg-brand-600/5 border-brand-600/30'
+                    ? 'bg-ink-900/5 border-data-100'
                     : 'bg-surface-page border-line'
                 }`}
               >
                 <div className="flex items-center justify-between">
                   <div className="font-semibold text-sm text-ink-900 flex items-center gap-2">
                     {m.status === 'Baseline' ? (
-                      <Cpu className="w-4 h-4 text-brand-600" />
+                      <Cpu className="w-4 h-4 text-data-700" />
                     ) : (
                       <Layers className="w-4 h-4 text-ink-500" />
                     )}
@@ -177,7 +177,7 @@ export const ModelEvaluationPage: React.FC = () => {
                   <span
                     className={`text-[10px] font-mono px-2 py-0.5 rounded uppercase font-bold ${
                       m.status === 'Baseline'
-                        ? 'bg-positive-600 text-white'
+                        ? 'bg-clear-600 text-white'
                         : 'bg-surface-hover text-ink-500 border border-line'
                     }`}
                   >
@@ -200,8 +200,29 @@ export const ModelEvaluationPage: React.FC = () => {
           </div>
 
           <div className="text-[11px] text-ink-500 bg-surface-page p-3 rounded-lg border border-line">
-            <strong>Inference Status:</strong> The XGBoost model loaded into the backend incorporates 2,038 boosted
-            trees, with the optimal tree cutoff selected at iteration #1937.
+            {/* Read from the serving bundle. This line used to name 2,038 trees
+                and iteration #1937, which belonged to the first model this
+                project trained and had been wrong since it was replaced. */}
+            <strong>What is loaded.</strong>{' '}
+            {data?.served_model ? (
+              <>
+                {data!.served_model.model_version}:{' '}
+                {data!.served_model.ensemble_members} XGBoost models averaged on
+                the log-odds scale, each scored only over the rounds early stopping
+                chose for it. Held out, it reaches PR-AUC{' '}
+                <span className="font-mono tabular-nums">
+                  {data!.served_model.held_out_pr_auc.toFixed(4)}
+                </span>{' '}
+                and ROC-AUC{' '}
+                <span className="font-mono tabular-nums">
+                  {data!.served_model.held_out_roc_auc.toFixed(4)}
+                </span>{' '}
+                on {data!.served_model.held_out_rows.toLocaleString()} rows scored
+                once.
+              </>
+            ) : (
+              'The serving bundle is not loaded, so nothing can be said about what is running.'
+            )}
           </div>
         </div>
       </div>
@@ -215,7 +236,7 @@ export const ModelEvaluationPage: React.FC = () => {
               PR-AUC improvement across 5 chronological blocks when retraining on previous labeled blocks
             </p>
           </div>
-          <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-mono font-semibold bg-positive-600/10 text-positive-700 border border-positive-600/30">
+          <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-mono font-semibold bg-clear-600/10 text-clear-700 border border-clear-600/30">
             <TrendingUp className="w-3.5 h-3.5" />
             <span>Mean Adaptation Gain: +7.62%</span>
           </div>
@@ -271,8 +292,8 @@ export const ModelEvaluationPage: React.FC = () => {
                   <tr key={b.block} className="hover:bg-surface-sunken/50 transition-colors">
                     <td className="py-2 px-3 text-ink-700 font-bold">Block {b.block}</td>
                     <td className="py-2 px-3 text-ink-500">{b.fixed_pr_auc.toFixed(4)}</td>
-                    <td className="py-2 px-3 text-brand-600 font-semibold">{b.adaptive_pr_auc.toFixed(4)}</td>
-                    <td className="py-2 px-3 text-positive-700 font-semibold">
+                    <td className="py-2 px-3 text-data-700 font-semibold">{b.adaptive_pr_auc.toFixed(4)}</td>
+                    <td className="py-2 px-3 text-clear-700 font-semibold">
                       +{((b.pr_auc_gain ?? 0) * 100).toFixed(2)}%
                     </td>
                   </tr>
@@ -291,7 +312,7 @@ export const ModelEvaluationPage: React.FC = () => {
       {/* Explicit Academic Limitations */}
       <div className="rounded-xl bg-surface-card border border-line p-6 shadow-card space-y-3">
         <h4 className="text-base font-bold text-ink-900 flex items-center gap-2">
-          <AlertTriangle className="w-5 h-5 text-warning-600" />
+          <AlertTriangle className="w-5 h-5 text-hold-600" />
           <span>Documented Research Limitations</span>
         </h4>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-3 pt-2">
@@ -300,7 +321,7 @@ export const ModelEvaluationPage: React.FC = () => {
               key={i}
               className="p-3.5 rounded-lg bg-surface-page border border-line text-xs text-ink-700 flex items-start gap-2.5"
             >
-              <div className="w-5 h-5 rounded-full bg-warning-600/10 text-warning-600 font-mono font-bold flex items-center justify-center flex-shrink-0 text-[10px] mt-0.5">
+              <div className="w-5 h-5 rounded-full bg-hold-600/10 text-hold-600 font-mono font-bold flex items-center justify-center flex-shrink-0 text-[10px] mt-0.5">
                 {i + 1}
               </div>
               <p className="leading-relaxed">{limitation}</p>

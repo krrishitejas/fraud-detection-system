@@ -11,6 +11,7 @@ import {
   XCircle,
 } from 'lucide-react';
 import { apiService, formatApiError } from '../services/api';
+import { DecisionRail } from '../components/DecisionRail';
 import type {
   AuditResponse,
   RuleCatalogueResponse,
@@ -59,9 +60,9 @@ const Field: React.FC<{ label: string; children: React.ReactNode }> = ({ label, 
 
 const riskChip = (level?: string | null) => {
   const map: Record<string, string> = {
-    HIGH: 'bg-danger-50 text-danger-700 border-danger-100',
-    MEDIUM: 'bg-warning-50 text-warning-700 border-warning-100',
-    LOW: 'bg-brand-50 text-brand-700 border-brand-100',
+    HIGH: 'bg-flag-50 text-flag-700 border-flag-100',
+    MEDIUM: 'bg-hold-50 text-hold-700 border-hold-100',
+    LOW: 'bg-data-50 text-data-700 border-data-100',
   };
   const cls = (level && map[level]) || 'bg-surface-sunken text-ink-500 border-line';
   return (
@@ -112,10 +113,10 @@ export const GovernancePage: React.FC = () => {
 
   if (error) {
     return (
-      <div className="bg-danger-50 border border-danger-100 rounded-xl p-5 flex gap-3">
-        <AlertTriangle className="w-5 h-5 text-danger-600 shrink-0 mt-0.5" />
+      <div className="bg-flag-50 border border-flag-100 rounded-xl p-5 flex gap-3">
+        <AlertTriangle className="w-5 h-5 text-flag-600 shrink-0 mt-0.5" />
         <div>
-          <p className="text-sm font-semibold text-danger-700">
+          <p className="text-sm font-semibold text-flag-700">
             Could not read the serving configuration
           </p>
           <p className="text-xs text-ink-600 mt-1">{error}</p>
@@ -178,10 +179,26 @@ export const GovernancePage: React.FC = () => {
               <Field label="Approved by">{threshold.approved_by ?? '—'}</Field>
             </dl>
 
-            <p className="mt-4 text-xs text-ink-600 bg-warning-50 border border-warning-100 rounded-lg p-3">
-              <strong className="text-warning-700">The cost ratio is an assumption.</strong>{' '}
+            <p className="mt-4 text-xs text-ink-600 bg-hold-50 border border-hold-100 rounded-lg p-3">
+              <strong className="text-hold-700">The cost ratio is an assumption.</strong>{' '}
               {threshold.cost_assumption_note}
             </p>
+
+            {/* The same rail, carrying every cutoff the cost assumption could
+                produce. A reader can see that the line does not drift under
+                the assumption, it travels across most of the useful range. */}
+            {threshold.sensitivity && threshold.sensitivity.length > 0 && (
+              <div className="mb-6">
+                <DecisionRail
+                  threshold={threshold.value}
+                  reviewLow={threshold.review_low}
+                  marks={threshold.sensitivity
+                    .filter((r) => Math.abs(r.threshold - threshold.value) > 1e-6)
+                    .map((r) => ({ at: r.threshold, label: `${r.cost_ratio}x` }))}
+                  label="Where the line sits, and where it would sit at the other cost assumptions"
+                />
+              </div>
+            )}
 
             {threshold.sensitivity && threshold.sensitivity.length > 0 && (
               <div className="mt-5">
@@ -203,10 +220,10 @@ export const GovernancePage: React.FC = () => {
                       {threshold.sensitivity.map((row) => {
                         const active = Math.abs(row.threshold - threshold.value) < 1e-6;
                         return (
-                          <tr key={row.cost_ratio} className={active ? 'bg-brand-50' : ''}>
+                          <tr key={row.cost_ratio} className={active ? 'bg-data-50' : ''}>
                             <td className="px-3 py-2 text-left">
                               {row.cost_ratio}×{active && (
-                                <span className="ml-2 text-[10px] text-brand-700 font-sans font-semibold">
+                                <span className="ml-2 text-[10px] text-data-700 font-sans font-semibold">
                                   in use
                                 </span>
                               )}
@@ -250,7 +267,7 @@ export const GovernancePage: React.FC = () => {
                   <div className="flex items-start justify-between gap-3 flex-wrap">
                     <div className="flex items-center gap-2 min-w-0">
                       {rule.is_active ? (
-                        <CheckCircle2 className="w-4 h-4 text-positive-700 shrink-0" />
+                        <CheckCircle2 className="w-4 h-4 text-clear-700 shrink-0" />
                       ) : (
                         <XCircle className="w-4 h-4 text-ink-400 shrink-0" />
                       )}
@@ -292,7 +309,7 @@ export const GovernancePage: React.FC = () => {
                       <span className="text-ink-400">lift </span>
                       <span
                         className={
-                          (rule.train_lift ?? 0) >= 2 ? 'text-positive-700' : 'text-ink-800'
+                          (rule.train_lift ?? 0) >= 2 ? 'text-clear-700' : 'text-ink-800'
                         }
                       >
                         {rule.train_lift?.toFixed(2) ?? '—'}×
@@ -386,10 +403,10 @@ export const GovernancePage: React.FC = () => {
                           <span
                             className={`inline-flex px-2 py-0.5 rounded-full border text-[11px] font-mono font-semibold ${
                               p.risk_band === 'FRAUD'
-                                ? 'bg-danger-50 text-danger-700 border-danger-100'
+                                ? 'bg-flag-50 text-flag-700 border-flag-100'
                                 : p.risk_band === 'REVIEW'
-                                ? 'bg-warning-50 text-warning-700 border-warning-100'
-                                : 'bg-positive-50 text-positive-700 border-positive-100'
+                                ? 'bg-hold-50 text-hold-700 border-hold-100'
+                                : 'bg-clear-50 text-clear-700 border-clear-100'
                             }`}
                           >
                             {p.risk_band}

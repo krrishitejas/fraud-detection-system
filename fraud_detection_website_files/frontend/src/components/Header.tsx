@@ -45,14 +45,14 @@ export const Header: React.FC<HeaderProps> = ({
         <div
           className={`flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium border ${
             isHealthy
-              ? 'bg-positive-600/10 text-positive-700 border-positive-600/30'
-              : 'bg-danger-600/10 text-danger-600 border-danger-600/30'
+              ? 'bg-clear-50 text-clear-700 border-clear-100'
+              : 'bg-flag-600/10 text-flag-600 border-flag-600/30'
           }`}
         >
           <span className="relative flex h-2 w-2">
 <span
               className={`relative inline-flex rounded-full h-2 w-2 ${
-                isHealthy ? 'bg-positive-600' : 'bg-danger-600'
+                isHealthy ? 'bg-clear-500' : 'bg-flag-600'
               }`}
             />
           </span>
@@ -66,7 +66,7 @@ export const Header: React.FC<HeaderProps> = ({
           rel="noopener noreferrer"
           className="hidden sm:inline-flex items-center gap-1 px-3 py-1.5 text-xs font-medium text-ink-700 hover:text-ink-900 bg-surface-hover hover:bg-surface-active/80 border border-line rounded-lg transition-colors"
         >
-          <Activity className="w-3.5 h-3.5 text-brand-600" />
+          <Activity className="w-3.5 h-3.5 text-data-700" />
           <span>Swagger Docs</span>
           <ExternalLink className="w-3 h-3 text-ink-500" />
         </a>
