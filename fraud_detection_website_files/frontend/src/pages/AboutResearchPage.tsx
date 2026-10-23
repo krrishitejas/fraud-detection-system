@@ -12,7 +12,7 @@ export const AboutResearchPage: React.FC = () => {
   return (
     <div className="space-y-6 max-w-5xl">
       {/* Title Card */}
-      <div className="rounded-2xl bg-gradient-to-r from-surface-card via-surface-sunken to-surface-card border border-line-strong p-6 sm:p-8 shadow-xl space-y-3">
+      <div className="rounded-2xl bg-surface-sunken border border-line p-6 sm:p-8 shadow-card space-y-3">
         <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full text-xs font-mono font-medium bg-brand-600/10 text-brand-600 border border-brand-600/30">
           <span>Major Academic Project Specification</span>
         </div>
@@ -26,7 +26,7 @@ export const AboutResearchPage: React.FC = () => {
       </div>
 
       {/* Section 1: Problem Statement & Motivation */}
-      <div className="rounded-xl bg-surface-card border border-line-strong p-6 shadow-lg space-y-3">
+      <div className="rounded-xl bg-surface-card border border-line p-6 shadow-card space-y-3">
         <h3 className="text-base font-bold text-ink-900 flex items-center gap-2">
           <Target className="w-5 h-5 text-danger-600" />
           <span>1. Problem Statement & Motivation</span>
@@ -36,7 +36,7 @@ export const AboutResearchPage: React.FC = () => {
             Online financial transactions are characterized by severe class imbalance (fraud typically accounts for &lt; 3.5%
             of total volume) and non-stationary transaction environments where fraud syndicates continually adapt their
             modus operandi. Traditional static supervised machine learning models degrade rapidly over time due to{' '}
-            <strong className="text-ink-900">concept drift</strong>—the shift in the relationship between input transaction
+            <strong className="text-ink-900">concept drift</strong>, the shift in the relationship between input transaction
             attributes and fraud outcomes (<code className="text-brand-600 font-mono">P(Y|X)</code>).
           </p>
           <p>
@@ -48,7 +48,7 @@ export const AboutResearchPage: React.FC = () => {
       </div>
 
       {/* Section 2: Model Architecture & Benchmark */}
-      <div className="rounded-xl bg-surface-card border border-line-strong p-6 shadow-lg space-y-3">
+      <div className="rounded-xl bg-surface-card border border-line p-6 shadow-card space-y-3">
         <h3 className="text-base font-bold text-ink-900 flex items-center gap-2">
           <Cpu className="w-5 h-5 text-brand-600" />
           <span>2. Model Architecture & Validation Findings</span>
@@ -58,20 +58,25 @@ export const AboutResearchPage: React.FC = () => {
             <div className="p-4 rounded-lg bg-surface-page border border-brand-600/30 space-y-2">
               <div className="font-semibold text-ink-900 flex items-center gap-2">
                 <Cpu className="w-4 h-4 text-brand-600" />
-                <span>Tabular XGBoost Baseline (Active Inference Model)</span>
+                <span>Tabular XGBoost, the model in service</span>
               </div>
-              <ul className="list-disc list-inside space-y-1 text-ink-500 text-[11px]">
-                <li>Features: 32 standardized transaction attributes</li>
-                <li>Trees: 2,038 boosting rounds (best iteration #1937)</li>
-                <li>Validation PR-AUC: <strong className="text-brand-600 font-mono">0.5529</strong></li>
-                <li>Validation ROC-AUC: <strong className="text-ink-800 font-mono">0.9112</strong></li>
-                <li>Status: Active production inference model in this FastAPI backend</li>
+              <ul className="list-disc list-inside space-y-1 text-ink-600 text-[11px]">
+                <li>Features: 32 standardised transaction attributes</li>
+                <li>Three models averaged on the log-odds scale, so one seed is not a draw</li>
+                <li>
+                  Held-out PR-AUC 0.5138, ROC-AUC 0.9016, over 88,081 rows scored once
+                </li>
+                <li>
+                  Its first version scored 0.5529 PR-AUC on the validation window in 2026;
+                  that figure is historical and was never measured on held-out data
+                </li>
+                <li>The live figures are served at /api/model/info and shown on the overview</li>
               </ul>
             </div>
 
             <div className="p-4 rounded-lg bg-surface-page border border-line space-y-2">
               <div className="font-semibold text-ink-900 flex items-center gap-2">
-                <Layers className="w-4 h-4 text-violet-600" />
+                <Layers className="w-4 h-4 text-ink-500" />
                 <span>Multi-Entity Graph Prototype (Research Prototype)</span>
               </div>
               <ul className="list-disc list-inside space-y-1 text-ink-500 text-[11px]">
@@ -94,9 +99,9 @@ export const AboutResearchPage: React.FC = () => {
       </div>
 
       {/* Section 3: Explainability & TreeSHAP */}
-      <div className="rounded-xl bg-surface-card border border-line-strong p-6 shadow-lg space-y-3">
+      <div className="rounded-xl bg-surface-card border border-line p-6 shadow-card space-y-3">
         <h3 className="text-base font-bold text-ink-900 flex items-center gap-2">
-          <Brain className="w-4 h-4 text-violet-600" />
+          <Brain className="w-4 h-4 text-ink-500" />
           <span>3. Interpretability & TreeSHAP Framework</span>
         </h3>
         <div className="text-xs text-ink-700 space-y-2.5 leading-relaxed">
@@ -121,7 +126,7 @@ export const AboutResearchPage: React.FC = () => {
       </div>
 
       {/* Section 4: Concept Drift & Sequential Adaptation */}
-      <div className="rounded-xl bg-surface-card border border-line-strong p-6 shadow-lg space-y-3">
+      <div className="rounded-xl bg-surface-card border border-line p-6 shadow-card space-y-3">
         <h3 className="text-base font-bold text-ink-900 flex items-center gap-2">
           <Activity className="w-4 h-4 text-positive-600" />
           <span>4. Concept Drift (PSI) & Sequential Adaptation</span>
@@ -147,7 +152,7 @@ export const AboutResearchPage: React.FC = () => {
       </div>
 
       {/* Section 5: Current Scope vs. Future Roadmap */}
-      <div className="rounded-xl bg-surface-card border border-line-strong p-6 shadow-lg space-y-3">
+      <div className="rounded-xl bg-surface-card border border-line p-6 shadow-card space-y-3">
         <h3 className="text-base font-bold text-ink-900 flex items-center gap-2">
           <Compass className="w-4 h-4 text-warning-600" />
           <span>5. Research Demo Scope vs. Production Roadmap</span>
@@ -155,7 +160,7 @@ export const AboutResearchPage: React.FC = () => {
         <div className="overflow-x-auto rounded-lg border border-line">
           <table className="w-full text-left text-xs border-collapse font-mono">
             <thead>
-              <tr className="border-b border-line-strong text-ink-500 bg-surface-page/80">
+              <tr className="border-b border-line text-ink-500 bg-surface-page/80">
                 <th className="py-2.5 px-3">System Dimension</th>
                 <th className="py-2.5 px-3">Current Academic Major Project Scope</th>
                 <th className="py-2.5 px-3 text-brand-600">Enterprise Production Roadmap</th>

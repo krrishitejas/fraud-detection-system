@@ -40,9 +40,7 @@ const Card: React.FC<{
 }> = ({ title, icon: Icon, subtitle, children }) => (
   <section className="bg-surface-card border border-line rounded-xl shadow-card">
     <header className="px-5 py-4 border-b border-line flex items-start gap-3">
-      <span className="mt-0.5 w-8 h-8 rounded-lg bg-brand-50 border border-brand-100 flex items-center justify-center shrink-0">
-        <Icon className="w-4 h-4 text-brand-600" />
-      </span>
+      <Icon className="mt-0.5 w-4 h-4 text-ink-500 shrink-0" />
       <div className="min-w-0">
         <h2 className="text-sm font-semibold text-ink-900">{title}</h2>
         {subtitle && <p className="text-xs text-ink-500 mt-0.5">{subtitle}</p>}
@@ -144,7 +142,7 @@ export const GovernancePage: React.FC = () => {
           <>
             <div className="grid sm:grid-cols-3 gap-4 mb-5">
               <div className="bg-surface-sunken rounded-lg p-4 border border-line">
-                <p className="text-[11px] uppercase tracking-wide text-ink-500 font-semibold">
+                <p className="text-[11px] tracking-normal text-ink-600 font-semibold">
                   Flag at or above
                 </p>
                 <p className="text-2xl font-mono font-bold text-ink-900 mt-1">
@@ -152,7 +150,7 @@ export const GovernancePage: React.FC = () => {
                 </p>
               </div>
               <div className="bg-surface-sunken rounded-lg p-4 border border-line">
-                <p className="text-[11px] uppercase tracking-wide text-ink-500 font-semibold">
+                <p className="text-[11px] tracking-normal text-ink-600 font-semibold">
                   Send to review at
                 </p>
                 <p className="text-2xl font-mono font-bold text-ink-900 mt-1">
@@ -160,7 +158,7 @@ export const GovernancePage: React.FC = () => {
                 </p>
               </div>
               <div className="bg-surface-sunken rounded-lg p-4 border border-line">
-                <p className="text-[11px] uppercase tracking-wide text-ink-500 font-semibold">
+                <p className="text-[11px] tracking-normal text-ink-600 font-semibold">
                   Assumed cost of a miss
                 </p>
                 <p className="text-2xl font-mono font-bold text-ink-900 mt-1">
@@ -343,7 +341,7 @@ export const GovernancePage: React.FC = () => {
                 ],
               ].map(([label, value]) => (
                 <div key={label} className="bg-surface-sunken border border-line rounded-lg p-3">
-                  <p className="text-[11px] uppercase tracking-wide text-ink-500 font-semibold">
+                  <p className="text-[11px] tracking-normal text-ink-600 font-semibold">
                     {label}
                   </p>
                   <p className="text-lg font-mono font-bold text-ink-900 mt-0.5">{value}</p>
@@ -352,7 +350,7 @@ export const GovernancePage: React.FC = () => {
             </div>
 
             {audit.predictions.length === 0 ? (
-              <div className="text-center py-10 border border-dashed border-line-strong rounded-lg">
+              <div className="text-center py-10 border border-dashed border-line rounded-lg">
                 <ShieldCheck className="w-6 h-6 text-ink-400 mx-auto mb-2" />
                 <p className="text-sm text-ink-600">Nothing scored yet.</p>
                 <p className="text-xs text-ink-500 mt-1">

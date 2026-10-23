@@ -130,7 +130,7 @@ export const BatchAnalysisPage: React.FC = () => {
   return (
     <div className="space-y-6">
       {/* Informational Guidance Notice */}
-      <div className="rounded-xl bg-surface-card border border-line-strong p-5 shadow-lg">
+      <div className="rounded-xl bg-surface-card border border-line p-5 shadow-card">
         <div className="flex items-start justify-between flex-wrap gap-4">
           <div className="space-y-1.5 max-w-2xl">
             <h3 className="text-sm font-bold text-ink-900 flex items-center gap-2">
@@ -157,7 +157,7 @@ export const BatchAnalysisPage: React.FC = () => {
       </div>
 
       {/* Upload Box */}
-      <div className="rounded-xl bg-surface-card border border-line-strong p-6 shadow-lg space-y-4">
+      <div className="rounded-xl bg-surface-card border border-line p-6 shadow-card space-y-4">
         <div
           onDragOver={(e) => {
             e.preventDefault();
@@ -165,10 +165,10 @@ export const BatchAnalysisPage: React.FC = () => {
           }}
           onDragLeave={() => setDragOver(false)}
           onDrop={handleFileDrop}
-          className={`border-2 border-dashed rounded-xl p-8 sm:p-12 text-center transition-all ${
+          className={`border-2 border-dashed rounded-xl p-8 sm:p-12 text-center transition-colors ${
             dragOver
               ? 'border-brand-600 bg-brand-600/5'
-              : 'border-line-strong bg-surface-page/50 hover:border-line-strong'
+              : 'border-line bg-surface-page/50 hover:border-line'
           }`}
         >
           <input
@@ -192,7 +192,7 @@ export const BatchAnalysisPage: React.FC = () => {
           <button
             type="button"
             onClick={() => fileInputRef.current?.click()}
-            className="px-4 py-2 rounded-lg text-xs font-semibold bg-surface-hover hover:bg-surface-active text-ink-800 border border-line-strong transition-colors"
+            className="px-4 py-2 rounded-lg text-xs font-semibold bg-surface-hover hover:bg-surface-active text-ink-800 border border-line transition-colors"
           >
             Browse Local File
           </button>
@@ -222,13 +222,13 @@ export const BatchAnalysisPage: React.FC = () => {
             disabled={!file || loading || downloading}
             className="inline-flex items-center gap-2 px-4 py-2.5 rounded-lg text-xs font-semibold bg-surface-hover hover:bg-surface-active text-ink-800 border border-line-strong disabled:opacity-40 transition-colors"
           >
-            <Download className={`w-4 h-4 ${downloading ? 'animate-bounce' : ''}`} />
+            <Download className="w-4 h-4" />
             <span>{downloading ? 'Exporting...' : 'Download Scored CSV'}</span>
           </button>
           <button
             onClick={handleScoreJson}
             disabled={!file || loading || downloading}
-            className="inline-flex items-center gap-2 px-6 py-2.5 rounded-lg text-xs font-semibold bg-gradient-to-r from-brand-600 to-brand-500 text-white hover:brightness-110 disabled:opacity-40 transition-all shadow-card"
+            className="inline-flex items-center gap-2 px-6 py-2.5 rounded-lg text-xs font-semibold bg-brand-600 text-white hover:brightness-110 disabled:opacity-40 transition-colors shadow-card"
           >
             <RefreshCw className={`w-4 h-4 ${loading ? 'animate-spin' : ''}`} />
             <span>{loading ? 'Scoring Rows...' : 'Score & View in Dashboard'}</span>
@@ -238,10 +238,10 @@ export const BatchAnalysisPage: React.FC = () => {
 
       {/* Results View */}
       {results && (
-        <div className="rounded-xl bg-surface-card border border-line-strong p-6 shadow-lg space-y-6">
+        <div className="rounded-xl bg-surface-card border border-line p-6 shadow-card space-y-6">
           {/* Summary Cards */}
           <div>
-            <div className="flex items-center justify-between pb-3 border-b border-line-strong">
+            <div className="flex items-center justify-between pb-3 border-b border-line">
               <h3 className="text-base font-bold text-ink-900 flex items-center gap-2">
                 <CheckCircle2 className="w-5 h-5 text-positive-600" />
                 <span>Batch Evaluation Results: {results.filename}</span>
@@ -292,7 +292,7 @@ export const BatchAnalysisPage: React.FC = () => {
                     setSearchTerm(e.target.value);
                     setCurrentPage(1);
                   }}
-                  className="w-full pl-9 pr-3 py-1.5 text-xs bg-surface-page border border-line-strong rounded-lg text-ink-900 font-mono focus:outline-none focus:border-brand-600"
+                  className="w-full pl-9 pr-3 py-1.5 text-xs bg-surface-page border border-line rounded-lg text-ink-900 font-mono focus:outline-none focus:border-brand-600"
                 />
               </div>
             </div>
@@ -305,7 +305,7 @@ export const BatchAnalysisPage: React.FC = () => {
                   setRiskFilter(e.target.value);
                   setCurrentPage(1);
                 }}
-                className="px-2.5 py-1.5 text-xs bg-surface-page border border-line-strong rounded-lg text-ink-800 font-mono focus:outline-none focus:border-brand-600"
+                className="px-2.5 py-1.5 text-xs bg-surface-page border border-line rounded-lg text-ink-800 font-mono focus:outline-none focus:border-brand-600"
               >
                 <option value="all">All Risk Tiers</option>
                 <option value="high">High Risk</option>
@@ -319,9 +319,9 @@ export const BatchAnalysisPage: React.FC = () => {
           <div className="overflow-x-auto rounded-lg border border-line">
             <table className="w-full text-left text-xs border-collapse">
               <thead>
-                <tr className="border-b border-line-strong text-ink-500 font-mono uppercase bg-surface-page/80">
-                  <th className="py-2.5 px-4">Row #</th>
-                  <th className="py-2.5 px-4">Fraud Probability</th>
+                <tr className="border-b border-line text-ink-600">
+                  <th className="py-2.5 px-4 text-right">Row</th>
+                  <th className="py-2.5 px-4 text-right">Fraud probability</th>
                   <th className="py-2.5 px-4">Classification</th>
                   <th className="py-2.5 px-4">Risk Tier</th>
                 </tr>
@@ -338,7 +338,7 @@ export const BatchAnalysisPage: React.FC = () => {
 
                   return (
                     <tr key={row.row_index} className="hover:bg-surface-sunken/50 transition-colors">
-                      <td className="py-2.5 px-4 text-ink-700 font-semibold">
+                      <td className="py-2.5 px-4 text-ink-700 font-semibold text-right tabular-nums">
                         #{row.row_index + 1}
                       </td>
                       <td className="py-2.5 px-4">
@@ -387,7 +387,7 @@ export const BatchAnalysisPage: React.FC = () => {
               <button
                 disabled={currentPage <= 1}
                 onClick={() => setCurrentPage((p) => Math.max(p - 1, 1))}
-                className="px-2.5 py-1 rounded bg-surface-hover text-ink-700 border border-line-strong disabled:opacity-40 hover:bg-surface-active"
+                className="px-2.5 py-1 rounded bg-surface-hover text-ink-700 border border-line disabled:opacity-40 hover:bg-surface-active"
               >
                 Prev
               </button>
@@ -397,7 +397,7 @@ export const BatchAnalysisPage: React.FC = () => {
               <button
                 disabled={currentPage >= totalPages}
                 onClick={() => setCurrentPage((p) => Math.min(p + 1, totalPages))}
-                className="px-2.5 py-1 rounded bg-surface-hover text-ink-700 border border-line-strong disabled:opacity-40 hover:bg-surface-active"
+                className="px-2.5 py-1 rounded bg-surface-hover text-ink-700 border border-line disabled:opacity-40 hover:bg-surface-active"
               >
                 Next
               </button>
