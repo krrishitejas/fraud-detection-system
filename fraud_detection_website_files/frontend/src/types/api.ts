@@ -3,6 +3,7 @@ export interface HealthResponse {
   status: 'healthy' | 'degraded' | string;
   model_loaded: boolean;
   model_type?: string | null;
+  model_version?: string | null;
   expected_features: number;
   boosting_rounds?: number | null;
   best_iteration?: number | null;
@@ -143,7 +144,25 @@ export interface SequentialAdaptationSummary {
   block_5_adaptive_pr_auc?: number;
 }
 
+export interface ServedModelInfo {
+  model_version: string;
+  preprocessing_version: string;
+  ensemble_members: number;
+  combine: string;
+  threshold: number;
+  score_scale: string;
+  held_out_pr_auc: number;
+  held_out_roc_auc: number;
+  held_out_brier: number;
+  held_out_ece: number;
+  held_out_rows: number;
+  alert_rate_pct: number;
+  recall: number;
+  precision: number;
+}
+
 export interface ModelInfoResponse {
+  served_model?: ServedModelInfo | null;
   research_title: string;
   active_inference_model: string;
   expected_features: number;

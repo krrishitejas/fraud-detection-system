@@ -57,7 +57,7 @@ export const ConceptDriftPage: React.FC = () => {
   return (
     <div className="space-y-6">
       {/* Educational Banner */}
-      <div className="rounded-xl bg-surface-card border border-line-strong p-5 shadow-lg space-y-3">
+      <div className="rounded-xl bg-surface-card border border-line p-5 shadow-card space-y-3">
         <div className="flex items-start justify-between flex-wrap gap-4">
           <div className="space-y-1.5 max-w-2xl">
             <h3 className="text-sm font-bold text-ink-900 flex items-center gap-2">
@@ -90,7 +90,7 @@ export const ConceptDriftPage: React.FC = () => {
 
       {/* Distinction & Critical Finding Box */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        <div className="rounded-xl bg-surface-card border border-line-strong p-5 shadow-lg space-y-3">
+        <div className="rounded-xl bg-surface-card border border-line p-5 shadow-card space-y-3">
           <h4 className="text-sm font-bold text-ink-900 flex items-center gap-2">
             <Info className="w-4 h-4 text-brand-600" />
             <span>Temporal Distortion vs. Genuine Shift</span>
@@ -108,7 +108,7 @@ export const ConceptDriftPage: React.FC = () => {
           </div>
         </div>
 
-        <div className="rounded-xl bg-surface-card border border-warning-600/30 p-5 shadow-lg space-y-3">
+        <div className="rounded-xl bg-surface-card border border-warning-600/30 p-5 shadow-card space-y-3">
           <h4 className="text-sm font-bold text-ink-900 flex items-center gap-2">
             <AlertTriangle className="w-4 h-4 text-warning-600" />
             <span>Offline Research Experiment &bull; Not Live Streaming</span>
@@ -126,8 +126,8 @@ export const ConceptDriftPage: React.FC = () => {
       </div>
 
       {/* Chart: PSI Comparison across Blocks */}
-      <div className="rounded-xl bg-surface-card border border-line-strong p-6 shadow-lg space-y-4">
-        <div className="flex items-center justify-between pb-3 border-b border-line-strong">
+      <div className="rounded-xl bg-surface-card border border-line p-6 shadow-card space-y-4">
+        <div className="flex items-center justify-between pb-3 border-b border-line">
           <div>
             <h4 className="text-base font-bold text-ink-900">Median PSI Across Chronological Blocks</h4>
             <p className="text-xs text-ink-500">Comparing All Features vs. Excluding Temporal Feature (TransactionDT)</p>
@@ -162,8 +162,8 @@ export const ConceptDriftPage: React.FC = () => {
       </div>
 
       {/* Comprehensive 5-Block PSI Table */}
-      <div className="rounded-xl bg-surface-card border border-line-strong p-6 shadow-lg space-y-4">
-        <div className="flex items-center justify-between pb-3 border-b border-line-strong">
+      <div className="rounded-xl bg-surface-card border border-line p-6 shadow-card space-y-4">
+        <div className="flex items-center justify-between pb-3 border-b border-line">
           <div>
             <h4 className="text-base font-bold text-ink-900">Historical 5-Block Drift Statistics Table</h4>
             <p className="text-xs text-ink-500">Detailed metric summary extracted from research artifacts</p>
@@ -173,7 +173,7 @@ export const ConceptDriftPage: React.FC = () => {
         <div className="overflow-x-auto rounded-lg border border-line">
           <table className="w-full text-left text-xs border-collapse">
             <thead>
-              <tr className="border-b border-line-strong text-ink-500 font-mono uppercase bg-surface-page/80">
+              <tr className="border-b border-line text-ink-600">
                 <th className="py-2.5 px-3">Time Block</th>
                 <th className="py-2.5 px-3">Transactions</th>
                 <th className="py-2.5 px-3">Median PSI (All)</th>

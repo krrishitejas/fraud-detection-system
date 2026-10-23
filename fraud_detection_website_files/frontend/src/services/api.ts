@@ -50,7 +50,7 @@ export function formatApiError(error: unknown): string {
       return 'Request timed out. Please check backend server status.';
     }
     if (!axiosErr.response) {
-      return 'Cannot reach the API. The backend serves this page, so if you can read this the server is up but the API is not answering — check its log.';
+      return 'Cannot reach the API. The backend serves this page, so if you can read this the server is up but the API is not answering. Check its log.';
     }
   }
   return error instanceof Error ? error.message : 'An unexpected error occurred.';

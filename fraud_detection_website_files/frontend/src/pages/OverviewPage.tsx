@@ -1,10 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import {
   ShieldAlert,
-  Cpu,
-  TrendingUp,
-  Activity,
-  Layers,
   ArrowRight,
   RefreshCw,
   AlertCircle,
@@ -86,48 +82,66 @@ export const OverviewPage: React.FC<OverviewPageProps> = ({ onNavigate }) => {
 
   return (
     <div className="space-y-6">
-      {/* Research Project Header Banner */}
-      <div className="relative overflow-hidden rounded-2xl bg-gradient-to-r from-surface-card via-surface-sunken to-surface-card border border-line-strong p-6 sm:p-8 shadow-xl">
-        <div className="absolute top-0 right-0 -mt-10 -mr-10 w-80 h-80 rounded-full bg-brand-600/10 blur-3xl pointer-events-none" />
-        <div className="relative z-10 max-w-3xl space-y-3">
-          <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full text-xs font-mono font-medium bg-brand-600/10 text-brand-600 border border-brand-600/30">
-            <span>Academic Major Project Demonstration</span>
+      {/*
+        An app screen is worked in, not read, so this is an action row rather
+        than a hero. What was here before was a landing page: a tinted pill
+        above a two-line thesis title, over a blurred glow, filling the first
+        screen with words the reader already knows. The title now sits once as
+        a statement, and the space goes to what the screen is for.
+      */}
+      <section className="rounded-xl bg-surface-card border border-line p-5 shadow-card">
+        <div className="flex flex-wrap items-start justify-between gap-4">
+          <div className="max-w-2xl">
+            <p className="text-sm text-ink-700 leading-relaxed">
+              An explainable dynamic graph learning framework for adaptive
+              financial fraud detection under concept drift.
+            </p>
+            <p className="text-xs text-ink-600 mt-1.5">
+              {modelInfo?.served_model ? (
+                <>
+                  Serving{' '}
+                  <span className="font-mono tabular-nums text-ink-800">
+                    {modelInfo.served_model.model_version}
+                  </span>
+                  , {modelInfo.served_model.ensemble_members} models averaged,
+                  flagging at{' '}
+                  <span className="font-mono tabular-nums text-ink-800">
+                    {modelInfo.served_model.threshold.toFixed(4)}
+                  </span>{' '}
+                  on the {modelInfo.served_model.score_scale} scale.
+                </>
+              ) : (
+                'Serving configuration unavailable.'
+              )}
+            </p>
           </div>
-          <h2 className="text-xl sm:text-2xl font-bold text-ink-900 tracking-tight leading-snug">
-            An Explainable Dynamic Graph Learning Framework for Adaptive Financial Fraud Detection under Concept Drift
-          </h2>
-          <p className="text-sm text-ink-700 leading-relaxed">
-            This dashboard integrates the verified 32-feature XGBoost baseline model artifact,
-            TreeSHAP feature attributions, and historical Population Stability Index (PSI) analysis
-            evaluated across sequential time blocks.
-          </p>
-          <div className="pt-2 flex flex-wrap gap-3">
+          <div className="flex flex-wrap gap-2 shrink-0">
             <button
               onClick={() => onNavigate('fraud-detection')}
-              className="inline-flex items-center gap-2 px-4 py-2 rounded-lg text-xs font-semibold bg-brand-600 text-white hover:bg-brand-600/90 transition-all shadow-card"
+              className="inline-flex items-center gap-2 px-4 py-2 rounded-md text-xs font-semibold bg-brand-600 text-white hover:bg-brand-700 transition-colors"
             >
               <ShieldAlert className="w-4 h-4" />
-              <span>Test Fraud Predictor</span>
+              <span>Score a payment</span>
               <ArrowRight className="w-3.5 h-3.5" />
             </button>
             <button
               onClick={() => onNavigate('batch-analysis')}
-              className="inline-flex items-center gap-2 px-4 py-2 rounded-lg text-xs font-semibold bg-surface-hover text-ink-800 hover:bg-surface-active/80 border border-line-strong transition-all"
+              className="inline-flex items-center gap-2 px-4 py-2 rounded-md text-xs font-medium text-ink-800 bg-surface-hover hover:bg-surface-active border border-line transition-colors"
             >
               <FileText className="w-4 h-4" />
-              <span>Score Batch CSV</span>
+              <span>Score a CSV</span>
             </button>
             <button
               onClick={fetchOverviewData}
               disabled={loading}
-              className="inline-flex items-center gap-1.5 px-3 py-2 rounded-lg text-xs font-medium text-ink-500 hover:text-ink-900 bg-surface-hover/40 border border-line-strong hover:bg-surface-hover transition-colors"
+              className="inline-flex items-center gap-1.5 px-3 py-2 rounded-md text-xs font-medium text-ink-600 hover:text-ink-900 border border-line hover:bg-surface-hover transition-colors"
             >
               <RefreshCw className={`w-3.5 h-3.5 ${loading ? 'animate-spin' : ''}`} />
-              <span>Refresh Metrics</span>
+              <span>Refresh</span>
             </button>
           </div>
         </div>
-      </div>
+      </section>
 
       {/* Error alert if backend offline */}
       {error && (
@@ -143,36 +157,39 @@ export const OverviewPage: React.FC<OverviewPageProps> = ({ onNavigate }) => {
       {/* Key Research Metric Summary Cards */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
         {/* Card 1: Active Model */}
-        <div className="rounded-xl bg-surface-card border border-line-strong p-5 space-y-2">
+        <div className="rounded-xl bg-surface-card border border-line p-5 space-y-2">
           <div className="flex items-center justify-between text-ink-500">
-            <span className="text-xs font-medium uppercase font-mono">Active Model</span>
-            <Cpu className="w-4 h-4 text-brand-600" />
+            <span className="text-xs font-medium text-ink-600">Active Model</span>
           </div>
           <div className="text-xl font-bold text-ink-900 tracking-tight">
-            XGBoost Baseline
+            {modelInfo?.served_model
+              ? `XGBoost \u00d7 ${modelInfo.served_model.ensemble_members}`
+              : 'XGBoost'}
           </div>
-          <div className="text-xs text-ink-500 flex items-center justify-between pt-1 border-t border-line">
-            <span>Validation PR-AUC:</span>
-            <span className="font-mono text-brand-600 font-semibold">
-              {modelInfo?.sequential_adaptation_summary?.baseline_validation_pr_auc
-                ? modelInfo.sequential_adaptation_summary.baseline_validation_pr_auc.toFixed(4)
-                : '0.5529'}
+          {/* Held out, not validation. The validation window is what early
+              stopping, the calibration and the cutoff were all chosen on, so
+              quoting it here would flatter the model with its own training. */}
+          <div className="text-xs text-ink-600 flex items-center justify-between pt-1 border-t border-line">
+            <span>Held-out PR-AUC:</span>
+            <span className="font-mono tabular-nums text-brand-700 font-semibold">
+              {modelInfo?.served_model?.held_out_pr_auc?.toFixed(4) ?? '—'}
             </span>
           </div>
         </div>
 
         {/* Card 2: Graph Prototype Comparison */}
-        <div className="rounded-xl bg-surface-card border border-line-strong p-5 space-y-2">
+        <div className="rounded-xl bg-surface-card border border-line p-5 space-y-2">
           <div className="flex items-center justify-between text-ink-500">
-            <span className="text-xs font-medium uppercase font-mono">Graph Prototype</span>
-            <Layers className="w-4 h-4 text-violet-600" />
+            <span className="text-xs font-medium text-ink-600">Graph Prototype</span>
           </div>
           <div className="text-xl font-bold text-ink-900 tracking-tight">
             Multi-Entity Prototype
           </div>
-          <div className="text-xs text-ink-500 flex items-center justify-between pt-1 border-t border-line">
-            <span>Validation PR-AUC:</span>
-            <span className="font-mono text-ink-700">
+          {/* A past experiment, kept because it failed and the failure is the
+              result. It is not the model being served. */}
+          <div className="text-xs text-ink-600 flex items-center justify-between pt-1 border-t border-line">
+            <span>2026 validation PR-AUC:</span>
+            <span className="font-mono tabular-nums text-ink-700">
               {modelInfo?.sequential_adaptation_summary?.graph_validation_pr_auc
                 ? modelInfo.sequential_adaptation_summary.graph_validation_pr_auc.toFixed(4)
                 : '0.3923'}
@@ -181,10 +198,9 @@ export const OverviewPage: React.FC<OverviewPageProps> = ({ onNavigate }) => {
         </div>
 
         {/* Card 3: Sequential Adaptation Gain */}
-        <div className="rounded-xl bg-surface-card border border-line-strong p-5 space-y-2">
+        <div className="rounded-xl bg-surface-card border border-line p-5 space-y-2">
           <div className="flex items-center justify-between text-ink-500">
-            <span className="text-xs font-medium uppercase font-mono">Adaptation Gain</span>
-            <TrendingUp className="w-4 h-4 text-positive-600" />
+            <span className="text-xs font-medium text-ink-600">Adaptation Gain</span>
           </div>
           <div className="text-xl font-bold text-positive-600 font-mono tracking-tight">
             +
@@ -196,15 +212,14 @@ export const OverviewPage: React.FC<OverviewPageProps> = ({ onNavigate }) => {
           </div>
           <div className="text-xs text-ink-500 flex items-center justify-between pt-1 border-t border-line">
             <span>Mean PR-AUC Gain:</span>
-            <span className="font-mono text-ink-700">Blocks 1 &rarr; 5</span>
+            <span className="font-mono tabular-nums text-ink-700">Blocks 1 &rarr; 5</span>
           </div>
         </div>
 
         {/* Card 4: Historical Stability */}
-        <div className="rounded-xl bg-surface-card border border-line-strong p-5 space-y-2">
+        <div className="rounded-xl bg-surface-card border border-line p-5 space-y-2">
           <div className="flex items-center justify-between text-ink-500">
-            <span className="text-xs font-medium uppercase font-mono">Covariate Shift</span>
-            <Activity className="w-4 h-4 text-warning-600" />
+            <span className="text-xs font-medium text-ink-600">Covariate Shift</span>
           </div>
           <div className="text-xl font-bold text-ink-900 font-mono tracking-tight">
             Median PSI &lt; 0.025
@@ -219,7 +234,7 @@ export const OverviewPage: React.FC<OverviewPageProps> = ({ onNavigate }) => {
       {/* Main Grid: Architecture Validation & Top SHAP Features */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         {/* Model Benchmark Comparison Chart */}
-        <div className="rounded-xl bg-surface-card border border-line-strong p-6 space-y-4">
+        <div className="rounded-xl bg-surface-card border border-line p-6 space-y-4">
           <div className="flex items-center justify-between">
             <div>
               <h3 className="text-base font-semibold text-ink-900">Validation Benchmark Comparison</h3>
@@ -237,9 +252,9 @@ export const OverviewPage: React.FC<OverviewPageProps> = ({ onNavigate }) => {
           <div className="h-60 w-full">
             {comparisonData.length > 0 ? (
               <ResponsiveContainer width="100%" height="100%">
-                <BarChart data={comparisonData} margin={{ top: 15, right: 20, left: -10, bottom: 5 }}>
+                <BarChart data={comparisonData} margin={{ top: 15, right: 20, left: 16, bottom: 5 }}>
                   <XAxis dataKey="name" stroke={chartColors.axis} fontSize={11} tickLine={false} />
-                  <YAxis dataKey="prAuc" stroke={chartColors.axis} fontSize={11} domain={[0, 1]} tickLine={false} />
+                  <YAxis dataKey="prAuc" stroke={chartColors.axis} fontSize={11} domain={[0, 1]} tickLine={false} width={38} />
                   <Tooltip
                     contentStyle={tooltipStyle}
                     itemStyle={tooltipItemStyle}
@@ -257,15 +272,16 @@ export const OverviewPage: React.FC<OverviewPageProps> = ({ onNavigate }) => {
           </div>
 
           <div className="p-3 rounded-lg bg-surface-page/80 border border-line text-xs text-ink-700 leading-relaxed">
-            <span className="font-semibold text-brand-600">Key Finding:</span> The tabular XGBoost baseline
-            demonstrated higher precision-recall validation performance (0.5529 PR-AUC) than the learned
-            multi-entity aggregation prototype (0.3923 PR-AUC). The deployed inference endpoint serves the verified
-            XGBoost model.
+            <span className="font-semibold text-ink-900">Key finding.</span> Plain gradient boosting on 32
+            columns beat the learned multi-entity aggregation prototype on the validation window, 0.5529
+            against 0.3923 PR-AUC, when both were measured in 2026. Two published studies since found the
+            same on this dataset, so the prototype's failure is a result rather than a bug. Those two figures
+            are historical: the model served now is a later one, and its own numbers are in the cards above.
           </div>
         </div>
 
         {/* Top 5 SHAP Contributing Features */}
-        <div className="rounded-xl bg-surface-card border border-line-strong p-6 space-y-4">
+        <div className="rounded-xl bg-surface-card border border-line p-6 space-y-4">
           <div className="flex items-center justify-between">
             <div>
               <h3 className="text-base font-semibold text-ink-900">Top Influential Features (TreeSHAP)</h3>
@@ -332,7 +348,7 @@ export const OverviewPage: React.FC<OverviewPageProps> = ({ onNavigate }) => {
       </div>
 
       {/* Historical Sequential Drift & Adaptation Summary */}
-      <div className="rounded-xl bg-surface-card border border-line-strong p-6 space-y-4">
+      <div className="rounded-xl bg-surface-card border border-line p-6 space-y-4">
         <div className="flex items-center justify-between flex-wrap gap-2">
           <div>
             <h3 className="text-base font-semibold text-ink-900">Sequential Adaptation Under Temporal Drift</h3>
@@ -352,13 +368,13 @@ export const OverviewPage: React.FC<OverviewPageProps> = ({ onNavigate }) => {
         <div className="overflow-x-auto">
           <table className="w-full text-left text-xs border-collapse">
             <thead>
-              <tr className="border-b border-line-strong text-ink-500 font-mono uppercase bg-surface-page/60">
-                <th className="py-2.5 px-3">Evaluation Block</th>
-                <th className="py-2.5 px-3">Transactions</th>
-                <th className="py-2.5 px-3">Fixed PR-AUC</th>
-                <th className="py-2.5 px-3">Adaptive PR-AUC</th>
-                <th className="py-2.5 px-3">Net Gain</th>
-                <th className="py-2.5 px-3">Covariate Shift (Excl. Time)</th>
+              <tr className="border-b border-line text-ink-600">
+                <th className="py-2.5 px-3 font-medium">Evaluation block</th>
+                <th className="py-2.5 px-3 font-medium text-right">Transactions</th>
+                <th className="py-2.5 px-3 font-medium text-right">Fixed PR-AUC</th>
+                <th className="py-2.5 px-3 font-medium text-right">Adaptive PR-AUC</th>
+                <th className="py-2.5 px-3 font-medium text-right">Net gain</th>
+                <th className="py-2.5 px-3 font-medium text-right">Median PSI, excluding time</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-line font-mono">
@@ -367,14 +383,26 @@ export const OverviewPage: React.FC<OverviewPageProps> = ({ onNavigate }) => {
                 return (
                   <tr key={row.block} className="hover:bg-surface-sunken/50 transition-colors">
                     <td className="py-2.5 px-3 text-ink-700 font-semibold">Block {row.block}</td>
-                    <td className="py-2.5 px-3 text-ink-500">{row.transactions.toLocaleString()}</td>
-                    <td className="py-2.5 px-3 text-ink-700">{row.fixed_pr_auc.toFixed(4)}</td>
-                    <td className="py-2.5 px-3 text-brand-600 font-semibold">{row.adaptive_pr_auc.toFixed(4)}</td>
-                    <td className="py-2.5 px-3 text-positive-600 font-semibold">
-                      +{((row.pr_auc_gain ?? 0) * 100).toFixed(2)}%
+                    <td className="py-2.5 px-3 text-ink-600 text-right tabular-nums">
+                      {row.transactions.toLocaleString()}
                     </td>
-                    <td className="py-2.5 px-3 text-ink-500">
-                      Median PSI: {driftBlock ? driftBlock.median_psi.toFixed(4) : '0.0137'}
+                    <td className="py-2.5 px-3 text-ink-700 text-right tabular-nums">
+                      {row.fixed_pr_auc.toFixed(4)}
+                    </td>
+                    <td className="py-2.5 px-3 text-ink-900 font-semibold text-right tabular-nums">
+                      {row.adaptive_pr_auc.toFixed(4)}
+                    </td>
+                    {/* Colour says good or bad, so a gain of zero is grey. */}
+                    <td
+                      className={`py-2.5 px-3 font-semibold text-right tabular-nums ${
+                        (row.pr_auc_gain ?? 0) > 0 ? 'text-positive-700' : 'text-ink-600'
+                      }`}
+                    >
+                      {(row.pr_auc_gain ?? 0) > 0 ? '+' : ''}
+                      {((row.pr_auc_gain ?? 0) * 100).toFixed(2)}%
+                    </td>
+                    <td className="py-2.5 px-3 text-ink-600 text-right tabular-nums">
+                      {driftBlock ? driftBlock.median_psi.toFixed(4) : '—'}
                     </td>
                   </tr>
                 );

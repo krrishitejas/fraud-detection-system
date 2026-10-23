@@ -49,7 +49,7 @@ export const ExplainabilityPage: React.FC = () => {
   return (
     <div className="space-y-6">
       {/* Educational Banner */}
-      <div className="rounded-xl bg-surface-card border border-line-strong p-5 shadow-lg space-y-3">
+      <div className="rounded-xl bg-surface-card border border-line p-5 shadow-card space-y-3">
         <div className="flex items-start justify-between flex-wrap gap-4">
           <div className="space-y-1.5 max-w-2xl">
             <h3 className="text-sm font-bold text-ink-900 flex items-center gap-2">
@@ -83,8 +83,8 @@ export const ExplainabilityPage: React.FC = () => {
       {/* Main Grid: Horizontal Bar Chart & Methodology Comparison */}
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
         {/* Horizontal Chart Card */}
-        <div className="lg:col-span-8 rounded-xl bg-surface-card border border-line-strong p-6 shadow-lg space-y-4">
-          <div className="flex items-center justify-between pb-3 border-b border-line-strong">
+        <div className="lg:col-span-8 rounded-xl bg-surface-card border border-line p-6 shadow-card space-y-4">
+          <div className="flex items-center justify-between pb-3 border-b border-line">
             <div>
               <h4 className="text-base font-bold text-ink-900">Top 15 Influential Model Features</h4>
               <p className="text-xs text-ink-500">Mean absolute TreeSHAP value |E[|SHAP|]|</p>
@@ -150,7 +150,7 @@ export const ExplainabilityPage: React.FC = () => {
 
         {/* Explainability Distinction Cards */}
         <div className="lg:col-span-4 space-y-4">
-          <div className="rounded-xl bg-surface-card border border-line-strong p-5 shadow-lg space-y-3">
+          <div className="rounded-xl bg-surface-card border border-line p-5 shadow-card space-y-3">
             <h4 className="text-sm font-bold text-ink-900 flex items-center gap-2">
               <Sparkles className="w-4 h-4 text-brand-600" />
               <span>Global vs. Local Explanations</span>
@@ -168,7 +168,7 @@ export const ExplainabilityPage: React.FC = () => {
             </div>
           </div>
 
-          <div className="rounded-xl bg-surface-card border border-warning-600/30 p-5 shadow-lg space-y-3">
+          <div className="rounded-xl bg-surface-card border border-warning-600/30 p-5 shadow-card space-y-3">
             <h4 className="text-sm font-bold text-ink-900 flex items-center gap-2">
               <HelpCircle className="w-4 h-4 text-warning-600" />
               <span>Attribution is Not Causation</span>
@@ -184,8 +184,8 @@ export const ExplainabilityPage: React.FC = () => {
       </div>
 
       {/* Full 32-Feature Ranked Table */}
-      <div className="rounded-xl bg-surface-card border border-line-strong p-6 shadow-lg space-y-4">
-        <div className="flex items-center justify-between pb-3 border-b border-line-strong">
+      <div className="rounded-xl bg-surface-card border border-line p-6 shadow-card space-y-4">
+        <div className="flex items-center justify-between pb-3 border-b border-line">
           <div>
             <h4 className="text-base font-bold text-ink-900">Complete Feature Importance Ranking (All 32 Features)</h4>
             <p className="text-xs text-ink-500">Mean absolute TreeSHAP contribution values extracted from Colab evaluation</p>
@@ -195,10 +195,10 @@ export const ExplainabilityPage: React.FC = () => {
         <div className="overflow-x-auto rounded-lg border border-line">
           <table className="w-full text-left text-xs border-collapse">
             <thead>
-              <tr className="border-b border-line-strong text-ink-500 font-mono uppercase bg-surface-page/80">
-                <th className="py-2.5 px-4 w-16">Rank</th>
+              <tr className="border-b border-line text-ink-600">
+                <th className="py-2.5 px-4 w-16 text-right">Rank</th>
                 <th className="py-2.5 px-4">Feature Name</th>
-                <th className="py-2.5 px-4">Mean |SHAP| Contribution</th>
+                <th className="py-2.5 px-4 text-right">Mean |SHAP| contribution</th>
                 <th className="py-2.5 px-4">Relative Magnitude</th>
               </tr>
             </thead>
@@ -209,15 +209,15 @@ export const ExplainabilityPage: React.FC = () => {
 
                 return (
                   <tr key={f.feature} className="hover:bg-surface-sunken/50 transition-colors">
-                    <td className="py-2.5 px-4 text-ink-500 font-bold">#{f.rank}</td>
+                    <td className="py-2.5 px-4 text-ink-500 font-bold text-right tabular-nums">{f.rank}</td>
                     <td className="py-2.5 px-4 text-brand-600 font-semibold">{f.feature}</td>
-                    <td className="py-2.5 px-4 text-ink-900 font-semibold">
+                    <td className="py-2.5 px-4 text-ink-900 font-semibold text-right tabular-nums">
                       {f.mean_absolute_shap_contribution.toFixed(4)}
                     </td>
                     <td className="py-2.5 px-4 w-1/3">
                       <div className="h-2 w-full bg-surface-page rounded-full overflow-hidden">
                         <div
-                          className="h-full rounded-full bg-gradient-to-r from-brand-600 to-violet-600"
+                          className="h-full rounded-full bg-brand-600"
                           style={{ width: `${widthPercent}%` }}
                         />
                       </div>

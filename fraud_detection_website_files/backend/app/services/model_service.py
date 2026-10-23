@@ -27,6 +27,7 @@ class ModelService:
         self.best_iteration: Optional[int] = None
         self.best_score: Optional[float] = None
         self.load_error: Optional[str] = None
+        self.model_version: Optional[str] = None
         self.preprocessing_service = PreprocessingService.get_instance()
         self.initialize_model()
 
@@ -72,6 +73,18 @@ class ModelService:
             # Count trees from booster dump summary
             dump = self.booster.get_dump()
             self.num_trees = len(dump)
+
+            # When the serving bundle is present it, not this fallback file, is
+            # what scores every request, so the reported metadata follows it.
+            registry = self._registry()
+            if registry is not None and registry.is_loaded:
+                self.num_trees = registry.trees_in_file
+                self.best_iteration = registry.best_iteration
+                self.model_type = (
+                    f"XGBoost, {len(registry.members)} model"
+                    f"{'' if len(registry.members) == 1 else 's'} averaged "
+                    f"({registry.combine})")
+                self.model_version = registry.model_version
 
             self.is_loaded = True
             self.load_error = None
