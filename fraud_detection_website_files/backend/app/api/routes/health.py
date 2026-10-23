@@ -29,6 +29,7 @@ def get_health(response: Response):
         status="healthy",
         model_loaded=True,
         model_type=model_service.model_type,
+        model_version=getattr(model_service, "model_version", None),
         expected_features=model_service.num_features,
         boosting_rounds=model_service.num_trees,
         best_iteration=model_service.best_iteration,

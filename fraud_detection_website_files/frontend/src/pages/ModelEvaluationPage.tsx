@@ -64,7 +64,7 @@ export const ModelEvaluationPage: React.FC = () => {
   return (
     <div className="space-y-6">
       {/* Header Banner */}
-      <div className="rounded-xl bg-surface-card border border-line-strong p-5 shadow-lg space-y-3">
+      <div className="rounded-xl bg-surface-card border border-line p-5 shadow-card space-y-3">
         <div className="flex items-start justify-between flex-wrap gap-4">
           <div className="space-y-1.5 max-w-2xl">
             <h3 className="text-sm font-bold text-ink-900 flex items-center gap-2">
@@ -98,8 +98,8 @@ export const ModelEvaluationPage: React.FC = () => {
       {/* Model Benchmark Grid */}
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
         {/* Comparison Chart */}
-        <div className="lg:col-span-7 rounded-xl bg-surface-card border border-line-strong p-6 shadow-lg space-y-4">
-          <div className="flex items-center justify-between pb-3 border-b border-line-strong">
+        <div className="lg:col-span-7 rounded-xl bg-surface-card border border-line p-6 shadow-card space-y-4">
+          <div className="flex items-center justify-between pb-3 border-b border-line">
             <div>
               <h4 className="text-base font-bold text-ink-900">Validation Metric Benchmark</h4>
               <p className="text-xs text-ink-500">Precision-Recall AUC vs. ROC-AUC on Validation Split</p>
@@ -134,20 +134,23 @@ export const ModelEvaluationPage: React.FC = () => {
           </div>
 
           <div className="p-3.5 rounded-lg bg-surface-page border border-line text-xs text-ink-700 space-y-1">
-            <div className="font-semibold text-ink-900">Key Research Outcome:</div>
-            <p className="text-ink-500 leading-relaxed">
-              In imbalanced fraud detection where the minority fraud class represents &lt; 3.5% of transactions,{' '}
-              <strong className="text-ink-900">PR-AUC is the definitive metric</strong>. The tabular XGBoost baseline
-              achieved a PR-AUC of <span className="text-brand-600 font-mono font-semibold">0.5529</span>, significantly
-              outperforming the learned graph prototype (<span className="text-ink-700 font-mono">0.3923</span>).
-              Hence, XGBoost is deployed as the production inference model.
+            <div className="font-semibold text-ink-900">Key research outcome</div>
+            <p className="text-ink-600 leading-relaxed">
+              Fraud is under 3.5% of these transactions, so{' '}
+              <strong className="text-ink-900">PR-AUC is the measure that matters</strong> and accuracy says
+              almost nothing. On the validation window in 2026 the tabular model reached{' '}
+              <span className="font-mono tabular-nums text-ink-800">0.5529</span> against the learned graph
+              prototype's <span className="font-mono tabular-nums text-ink-800">0.3923</span>, which is why
+              gradient boosting is what gets served. Two published studies on this same dataset have since
+              reported the same ordering, so the prototype's result is a finding rather than a fault. Both
+              figures are from that experiment; the model in service now is a later one.
             </p>
           </div>
         </div>
 
         {/* Model Comparison Table */}
-        <div className="lg:col-span-5 rounded-xl bg-surface-card border border-line-strong p-6 shadow-lg space-y-4">
-          <div className="pb-3 border-b border-line-strong">
+        <div className="lg:col-span-5 rounded-xl bg-surface-card border border-line p-6 shadow-card space-y-4">
+          <div className="pb-3 border-b border-line">
             <h4 className="text-base font-bold text-ink-900">Architecture Summary</h4>
             <p className="text-xs text-ink-500">Recorded experimental validation performance</p>
           </div>
@@ -167,7 +170,7 @@ export const ModelEvaluationPage: React.FC = () => {
                     {m.status === 'Baseline' ? (
                       <Cpu className="w-4 h-4 text-brand-600" />
                     ) : (
-                      <Layers className="w-4 h-4 text-violet-600" />
+                      <Layers className="w-4 h-4 text-ink-500" />
                     )}
                     <span>{m.model}</span>
                   </div>
@@ -175,7 +178,7 @@ export const ModelEvaluationPage: React.FC = () => {
                     className={`text-[10px] font-mono px-2 py-0.5 rounded uppercase font-bold ${
                       m.status === 'Baseline'
                         ? 'bg-positive-600 text-white'
-                        : 'bg-surface-hover text-ink-500 border border-line-strong'
+                        : 'bg-surface-hover text-ink-500 border border-line'
                     }`}
                   >
                     {m.status}
@@ -204,8 +207,8 @@ export const ModelEvaluationPage: React.FC = () => {
       </div>
 
       {/* Sequential Adaptation Experiment Section */}
-      <div className="rounded-xl bg-surface-card border border-line-strong p-6 shadow-lg space-y-4">
-        <div className="flex items-center justify-between pb-3 border-b border-line-strong flex-wrap gap-2">
+      <div className="rounded-xl bg-surface-card border border-line p-6 shadow-card space-y-4">
+        <div className="flex items-center justify-between pb-3 border-b border-line flex-wrap gap-2">
           <div>
             <h4 className="text-base font-bold text-ink-900">Sequential Adaptation Performance</h4>
             <p className="text-xs text-ink-500">
@@ -256,7 +259,7 @@ export const ModelEvaluationPage: React.FC = () => {
           <div className="lg:col-span-5 overflow-x-auto rounded-lg border border-line">
             <table className="w-full text-left text-xs border-collapse">
               <thead>
-                <tr className="border-b border-line-strong text-ink-500 font-mono uppercase bg-surface-page/80">
+                <tr className="border-b border-line text-ink-600">
                   <th className="py-2.5 px-3">Block</th>
                   <th className="py-2.5 px-3">Fixed</th>
                   <th className="py-2.5 px-3">Adaptive</th>
@@ -286,7 +289,7 @@ export const ModelEvaluationPage: React.FC = () => {
       </div>
 
       {/* Explicit Academic Limitations */}
-      <div className="rounded-xl bg-surface-card border border-line-strong p-6 shadow-lg space-y-3">
+      <div className="rounded-xl bg-surface-card border border-line p-6 shadow-card space-y-3">
         <h4 className="text-base font-bold text-ink-900 flex items-center gap-2">
           <AlertTriangle className="w-5 h-5 text-warning-600" />
           <span>Documented Research Limitations</span>

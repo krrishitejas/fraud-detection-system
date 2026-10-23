@@ -58,21 +58,21 @@ export const Sidebar: React.FC<SidebarProps> = ({
       {/* Mobile Backdrop */}
       {isOpen && (
         <div
-          className="fixed inset-0 bg-ink-900/25 backdrop-blur-sm z-40 lg:hidden"
+          className="fixed inset-0 bg-ink-900/25 z-40 lg:hidden"
           onClick={onCloseMobile}
         />
       )}
 
       {/* Sidebar Container */}
       <aside
-        className={`fixed top-0 bottom-0 left-0 z-50 w-72 bg-surface-card border-r border-line-strong flex flex-col transition-transform duration-300 ease-in-out lg:translate-x-0 ${
+        className={`fixed top-0 bottom-0 left-0 z-50 w-72 bg-surface-card border-r border-line flex flex-col transition-transform duration-300 ease-in-out lg:translate-x-0 ${
           isOpen ? 'translate-x-0' : '-translate-x-full'
         }`}
       >
         {/* Brand Header */}
-        <div className="p-5 border-b border-line-strong flex items-center justify-between">
+        <div className="p-5 border-b border-line flex items-center justify-between">
           <div className="flex items-center space-x-3">
-            <div className="w-10 h-10 rounded-xl bg-gradient-to-tr from-brand-600 via-brand-500 to-violet-600 flex items-center justify-center shadow-card">
+            <div className="w-10 h-10 rounded-xl bg-brand-600 flex items-center justify-center">
               <ShieldAlert className="w-5 h-5 text-white stroke-[2.5]" />
             </div>
             <div>
@@ -92,9 +92,6 @@ export const Sidebar: React.FC<SidebarProps> = ({
 
         {/* Navigation Items */}
         <nav className="flex-1 px-3 py-4 space-y-1 overflow-y-auto">
-          <div className="px-3 pb-2 text-[10px] font-semibold uppercase tracking-wider text-ink-400 font-mono">
-            Navigation
-          </div>
           {navItems.map((item) => {
             const Icon = item.icon;
             const isActive = currentTab === item.id;
@@ -105,7 +102,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
                   onSelectTab(item.id as TabId);
                   onCloseMobile();
                 }}
-                className={`w-full flex items-center space-x-3 px-3.5 py-2.5 rounded-lg text-sm font-medium transition-all duration-150 ${
+                className={`w-full flex items-center space-x-3 px-3.5 py-2.5 rounded-lg text-sm font-medium transition-colors duration-150 ${
                   isActive
                     ? 'bg-brand-600/10 text-brand-600 border border-brand-600/25 shadow-card'
                     : 'text-ink-500 hover:text-ink-800 hover:bg-surface-hover/60 border border-transparent'
@@ -119,7 +116,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
         </nav>
 
         {/* API Health & Server Info */}
-        <div className="p-4 border-t border-line-strong bg-surface-page/60 space-y-3">
+        <div className="p-4 border-t border-line bg-surface-page/60 space-y-3">
           <div className="flex items-center justify-between text-xs">
             <span className="text-ink-500">Backend API</span>
             <div
@@ -143,21 +140,23 @@ export const Sidebar: React.FC<SidebarProps> = ({
             </div>
           </div>
 
-          <div className="text-[11px] font-mono text-ink-500 bg-surface-card/90 rounded-md p-2.5 border border-line-strong space-y-1">
+          <div className="text-[11px] font-mono text-ink-500 bg-surface-card/90 rounded-md p-2.5 border border-line space-y-1">
             <div className="flex justify-between">
-              <span className="text-ink-400">Model:</span>
-              <span className="text-ink-700 font-semibold truncate max-w-[120px]">
-                {health?.model_type ? 'XGBoost (32f)' : 'Unavailable'}
+              <span className="text-ink-500">Model:</span>
+              <span className="text-ink-700 font-semibold truncate max-w-[130px]">
+                {health?.model_version ?? 'Unavailable'}
               </span>
             </div>
             <div className="flex justify-between">
-              <span className="text-ink-400">Features:</span>
+              <span className="text-ink-500">Features:</span>
               <span className="text-ink-700">{health?.expected_features ?? 32} features</span>
             </div>
-            {health?.best_iteration && (
+            {health?.boosting_rounds && (
               <div className="flex justify-between">
-                <span className="text-ink-400">Best Round:</span>
-                <span className="text-ink-700">#{health.best_iteration}</span>
+                <span className="text-ink-500">Trees:</span>
+                <span className="text-ink-700 tabular-nums">
+                  {health.boosting_rounds.toLocaleString()}
+                </span>
               </div>
             )}
           </div>
@@ -166,7 +165,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
             href="/docs"
             target="_blank"
             rel="noopener noreferrer"
-            className="flex items-center justify-between w-full px-3 py-2 text-xs font-medium text-ink-500 hover:text-brand-600 bg-surface-hover/40 hover:bg-surface-hover rounded-md border border-line-strong transition-colors"
+            className="flex items-center justify-between w-full px-3 py-2 text-xs font-medium text-ink-500 hover:text-brand-600 bg-surface-hover/40 hover:bg-surface-hover rounded-md border border-line transition-colors"
           >
             <span>FastAPI Docs (Swagger)</span>
             <ExternalLink className="w-3.5 h-3.5 text-ink-500" />

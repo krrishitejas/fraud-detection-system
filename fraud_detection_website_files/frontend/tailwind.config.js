@@ -29,16 +29,16 @@ export default {
           active: '#dde6f2',   // pressed and selected fills
         },
         line: {
-          DEFAULT: '#e4eaf3',  // ordinary separators
-          strong:  '#cbd6e6',  // emphasised edges, input borders
+          DEFAULT: '#e9edf4',  // panels and separators: ~1.15:1 on white
+          strong:  '#cbd6e6',  // controls only, where an edge must be findable
         },
         ink: {
           900: '#0f172a',      // headings
           800: '#1e293b',      // strong body
           700: '#334155',      // body
           600: '#475569',      // secondary body
-          500: '#64748b',      // labels, captions
-          400: '#8696ad',      // the quietest readable text
+          500: '#5b6b82',      // labels, captions (4.9:1 on white)
+          400: '#6b7a91',      // the quietest readable text (4.5:1 on white)
         },
         brand: {
           50:  '#eef4ff',
@@ -53,6 +53,13 @@ export default {
         danger:   { 50: '#fef2f2', 100: '#fee2e2', 500: '#ef4444', 600: '#dc2626', 700: '#b91c1c' },
         violet:   { 50: '#f5f3ff', 100: '#ede9fe', 500: '#8b5cf6', 600: '#7c3aed', 700: '#6d28d9' },
         teal:     { 50: '#f0fdfa', 100: '#ccfbf1', 500: '#14b8a6', 600: '#0d9488', 700: '#0f766e' },
+      },
+      fontSize: {
+        // 13px, not Tailwind's 12px. An app screen is read for eight hours;
+        // the inspector measured 72% of this screen under 13px, which is
+        // subline size being used for the data itself.
+        xs: ['0.8125rem', { lineHeight: '1.15rem' }],
+        sm: ['0.875rem', { lineHeight: '1.3rem' }],
       },
       fontFamily: {
         sans: ['Inter', 'system-ui', '-apple-system', 'sans-serif'],

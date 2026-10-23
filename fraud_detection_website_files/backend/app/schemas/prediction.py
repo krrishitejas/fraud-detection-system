@@ -7,6 +7,8 @@ class HealthResponse(BaseModel):
     status: str = Field(..., description="API operational status ('healthy' or 'degraded')")
     model_loaded: bool = Field(..., description="Whether the XGBoost model loaded successfully")
     model_type: Optional[str] = Field(None, description="Model architecture type")
+    model_version: Optional[str] = Field(
+        None, description="The served model version, from the serving bundle")
     expected_features: int = Field(..., description="Number of features expected by the model")
     boosting_rounds: Optional[int] = Field(None, description="Total trees in model")
     best_iteration: Optional[int] = Field(None, description="Optimal boosting round selected")
@@ -159,9 +161,36 @@ class AdaptiveBlockResult(BaseModel):
     roc_auc_gain: float
 
 
+class ServedModelInfo(BaseModel):
+    """The model the service is actually scoring with, read from the serving
+    bundle rather than from the historical experiment files.
+
+    This block exists because the two drifted apart. The research CSVs record
+    the first model this project trained, and the dashboard was presenting
+    those figures under the heading 'active model' long after the served model
+    had been replaced twice. Historical measurements are worth keeping, but
+    only the bundle can say what is running now."""
+
+    model_version: str
+    preprocessing_version: str
+    ensemble_members: int
+    combine: str
+    threshold: float
+    score_scale: str
+    held_out_pr_auc: float
+    held_out_roc_auc: float
+    held_out_brier: float
+    held_out_ece: float
+    held_out_rows: int
+    alert_rate_pct: float
+    recall: float
+    precision: float
+
+
 class ModelInfoResponse(BaseModel):
     research_title: str
     active_inference_model: str
+    served_model: Optional[ServedModelInfo] = None
     expected_features: int
     feature_names: List[str]
     model_comparison: List[ModelComparisonItem]

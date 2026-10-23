@@ -1,5 +1,5 @@
 import React from 'react';
-import { Menu, Activity, Sparkles, ExternalLink } from 'lucide-react';
+import { Menu, Activity, ExternalLink } from 'lucide-react';
 import type { HealthResponse } from '../types/api';
 
 interface HeaderProps {
@@ -18,7 +18,7 @@ export const Header: React.FC<HeaderProps> = ({
   const isHealthy = health?.status === 'healthy';
 
   return (
-    <header className="sticky top-0 z-30 bg-surface-page/80 backdrop-blur-md border-b border-line-strong px-4 sm:px-8 py-4 flex items-center justify-between">
+    <header className="sticky top-0 z-30 bg-surface-card border-b border-line px-4 sm:px-8 py-4 flex items-center justify-between">
       <div className="flex items-center space-x-3">
         <button
           onClick={onOpenMobileNav}
@@ -37,9 +37,8 @@ export const Header: React.FC<HeaderProps> = ({
 
       <div className="flex items-center space-x-2 sm:space-x-3">
         {/* Model Identifier Pill */}
-        <div className="hidden md:flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-mono font-medium bg-surface-hover border border-line-strong text-ink-700">
-          <Sparkles className="w-3.5 h-3.5 text-brand-600" />
-          <span>XGBoost Baseline (32f)</span>
+        <div className="hidden md:flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-mono font-medium bg-surface-hover border border-line text-ink-700">
+          <span>{health?.model_version ?? 'no model'}</span>
         </div>
 
         {/* Live Status Indicator */}
@@ -51,12 +50,7 @@ export const Header: React.FC<HeaderProps> = ({
           }`}
         >
           <span className="relative flex h-2 w-2">
-            <span
-              className={`animate-ping absolute inline-flex h-full w-full rounded-full opacity-75 ${
-                isHealthy ? 'bg-positive-600' : 'bg-danger-600'
-              }`}
-            />
-            <span
+<span
               className={`relative inline-flex rounded-full h-2 w-2 ${
                 isHealthy ? 'bg-positive-600' : 'bg-danger-600'
               }`}
@@ -70,7 +64,7 @@ export const Header: React.FC<HeaderProps> = ({
           href="/docs"
           target="_blank"
           rel="noopener noreferrer"
-          className="hidden sm:inline-flex items-center gap-1 px-3 py-1.5 text-xs font-medium text-ink-700 hover:text-ink-900 bg-surface-hover hover:bg-surface-active/80 border border-line-strong rounded-lg transition-colors"
+          className="hidden sm:inline-flex items-center gap-1 px-3 py-1.5 text-xs font-medium text-ink-700 hover:text-ink-900 bg-surface-hover hover:bg-surface-active/80 border border-line rounded-lg transition-colors"
         >
           <Activity className="w-3.5 h-3.5 text-brand-600" />
           <span>Swagger Docs</span>

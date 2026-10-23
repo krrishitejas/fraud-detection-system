@@ -119,7 +119,7 @@ const OUTCOME: Record<Classification, {
     icon: Eye,
     tone: 'border-warning-100 bg-warning-50',
     chip: 'bg-warning-600 text-white',
-    blurb: 'Below the cutoff but above the review floor — an analyst decides.',
+    blurb: 'Below the cutoff but above the review floor, so an analyst decides.',
   },
   LEGITIMATE: {
     label: 'Approved',
@@ -195,9 +195,7 @@ export const FraudDetectionPage: React.FC = () => {
       <form onSubmit={submit} className="lg:col-span-3 space-y-5">
         <section className="bg-surface-card border border-line rounded-xl shadow-card">
           <header className="px-5 py-4 border-b border-line flex items-center gap-3">
-            <span className="w-8 h-8 rounded-lg bg-brand-50 border border-brand-100 flex items-center justify-center">
-              <Sliders className="w-4 h-4 text-brand-600" />
-            </span>
+            <Sliders className="w-4 h-4 text-ink-500 shrink-0" />
             <div>
               <h2 className="text-sm font-semibold text-ink-900">The payment</h2>
               <p className="text-xs text-ink-500 mt-0.5">
@@ -210,7 +208,7 @@ export const FraudDetectionPage: React.FC = () => {
           <div className="p-5 space-y-6">
             {/* categories */}
             <div>
-              <h3 className="text-xs font-semibold uppercase tracking-wide text-ink-500 mb-3">
+              <h3 className="text-xs font-semibold text-ink-600 mb-3">
                 Categories
               </h3>
               <div className="grid sm:grid-cols-2 gap-3">
@@ -224,7 +222,7 @@ export const FraudDetectionPage: React.FC = () => {
                         onChange={(e) => set(f.key, e.target.value)}
                         className="mt-1 w-full px-3 py-2 text-sm rounded-md border border-line-strong bg-surface-card text-ink-800 focus:border-brand-500"
                       >
-                        <option value="">— absent —</option>
+                        <option value="">(absent)</option>
                         {options.map((v) => (
                           <option key={v} value={v}>
                             {v}
@@ -257,7 +255,7 @@ export const FraudDetectionPage: React.FC = () => {
                     className="w-full flex items-center justify-between text-left mb-2"
                   >
                     <span>
-                      <span className="text-xs font-semibold uppercase tracking-wide text-ink-500">
+                      <span className="text-xs font-semibold text-ink-600">
                         {group.name}
                       </span>
                       <span className="block text-[11px] text-ink-400 mt-0.5 normal-case font-normal tracking-normal">
@@ -319,7 +317,7 @@ export const FraudDetectionPage: React.FC = () => {
                 setResult(null);
                 setError(null);
               }}
-              className="inline-flex items-center gap-2 px-3 py-2 rounded-md border border-line-strong text-ink-700 text-sm hover:bg-surface-hover"
+              className="inline-flex items-center gap-2 px-3 py-2 rounded-md border border-line text-ink-700 text-sm hover:bg-surface-hover"
             >
               <RotateCcw className="w-3.5 h-3.5" /> Reset
             </button>
@@ -342,7 +340,7 @@ export const FraudDetectionPage: React.FC = () => {
         )}
 
         {!result && !error && (
-          <div className="bg-surface-card border border-dashed border-line-strong rounded-xl p-8 text-center">
+          <div className="bg-surface-card border border-dashed border-line rounded-xl p-8 text-center">
             <ShieldCheck className="w-7 h-7 text-ink-400 mx-auto mb-3" />
             <p className="text-sm text-ink-600">No payment scored yet.</p>
             <p className="text-xs text-ink-500 mt-1">
@@ -372,7 +370,7 @@ export const FraudDetectionPage: React.FC = () => {
 
               <div className="mt-4 grid grid-cols-2 gap-3">
                 <div className="bg-surface-card/80 rounded-lg p-3 border border-line">
-                  <p className="text-[11px] uppercase tracking-wide text-ink-500 font-semibold">
+                  <p className="text-[11px] tracking-normal text-ink-600 font-semibold">
                     Fraud probability
                   </p>
                   <p className="text-2xl font-mono font-bold text-ink-900 mt-0.5">
@@ -380,7 +378,7 @@ export const FraudDetectionPage: React.FC = () => {
                   </p>
                 </div>
                 <div className="bg-surface-card/80 rounded-lg p-3 border border-line">
-                  <p className="text-[11px] uppercase tracking-wide text-ink-500 font-semibold">
+                  <p className="text-[11px] tracking-normal text-ink-600 font-semibold">
                     Compared against
                   </p>
                   <p className="text-2xl font-mono font-bold text-ink-900 mt-0.5">
@@ -430,8 +428,8 @@ export const FraudDetectionPage: React.FC = () => {
               </h3>
               {result.rules.rules_fired.length === 0 ? (
                 <p className="text-xs text-ink-500 mt-2">
-                  No rule fired. The rules run beside the model, not inside it — the
-                  score above stands on its own.
+                  No rule fired. The rules run beside the model rather than inside
+                  it, so the score above stands on its own.
                 </p>
               ) : (
                 <ul className="mt-3 space-y-2">

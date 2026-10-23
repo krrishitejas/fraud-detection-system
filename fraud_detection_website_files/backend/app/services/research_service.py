@@ -9,6 +9,7 @@ from app.schemas.prediction import (
     ModelInfoResponse,
     ModelComparisonItem,
     AdaptiveBlockResult,
+    ServedModelInfo,
 )
 from app.services.preprocessing_service import PreprocessingService
 
@@ -102,10 +103,15 @@ class ResearchService:
 
         prep = PreprocessingService.get_instance()
         feature_names = prep.feature_columns
+        served = self._served_model()
 
         self.cached_info = ModelInfoResponse(
             research_title=research_title,
-            active_inference_model="XGBoost Baseline (32 features, tree-based)",
+            active_inference_model=(
+                f"XGBoost, {len(feature_names)} features, "
+                f"{served.ensemble_members} models averaged" if served
+                else "XGBoost Baseline (32 features, tree-based)"),
+            served_model=served,
             expected_features=len(feature_names),
             feature_names=feature_names,
             model_comparison=comparison_items,
@@ -114,6 +120,35 @@ class ResearchService:
             research_limitations=limitations,
             evaluation_protocol_note=eval_note,
         )
+
+    @staticmethod
+    def _served_model() -> Optional[ServedModelInfo]:
+        """Read the served model's own numbers out of the serving bundle.
+
+        Returns None when the bundle is absent, so the older endpoints keep
+        working and the dashboard simply omits the block rather than falling
+        back to a figure that would be wrong.
+        """
+        try:
+            from app.services.registry_service import ServingRegistry
+            r = ServingRegistry.get_instance()
+            if not r.is_loaded:
+                return None
+            m = r.config["held_out_block_metrics"]
+            return ServedModelInfo(
+                model_version=r.model_version,
+                preprocessing_version=r.preprocessing_version,
+                ensemble_members=int(r.config.get("ensemble_members", len(r.members))),
+                combine=r.combine,
+                threshold=r.threshold,
+                score_scale=r.score_scale,
+                held_out_pr_auc=m["pr_auc"], held_out_roc_auc=m["roc_auc"],
+                held_out_brier=m["brier"], held_out_ece=m["ece"],
+                held_out_rows=m["rows"], alert_rate_pct=m["alert_rate_pct"],
+                recall=m["recall"], precision=m["precision"])
+        except Exception as exc:                                   # noqa: BLE001
+            logger.warning("Served-model block unavailable: %s", exc)
+            return None
 
     def get_research_info(self) -> ModelInfoResponse:
         if self.cached_info is None:
