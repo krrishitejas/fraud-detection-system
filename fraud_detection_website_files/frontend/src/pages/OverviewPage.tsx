@@ -17,7 +17,6 @@ import {
   XAxis,
   YAxis,
   Tooltip,
-  Cell,
 } from 'recharts';
 import { apiService, formatApiError } from '../services/api';
 import type {
@@ -27,6 +26,7 @@ import type {
   FeatureImportanceResponse,
 } from '../types/api';
 import type { TabId } from '../components/Sidebar';
+import { chartColors, tooltipStyle, tooltipItemStyle, tooltipLabelStyle } from '../theme/charts';
 
 interface OverviewPageProps {
   onNavigate: (tab: TabId) => void;
@@ -87,16 +87,16 @@ export const OverviewPage: React.FC<OverviewPageProps> = ({ onNavigate }) => {
   return (
     <div className="space-y-6">
       {/* Research Project Header Banner */}
-      <div className="relative overflow-hidden rounded-2xl bg-gradient-to-r from-navy-900 via-navy-850 to-navy-900 border border-navy-700/80 p-6 sm:p-8 shadow-xl">
-        <div className="absolute top-0 right-0 -mt-10 -mr-10 w-80 h-80 rounded-full bg-accent-cyan/10 blur-3xl pointer-events-none" />
+      <div className="relative overflow-hidden rounded-2xl bg-gradient-to-r from-surface-card via-surface-sunken to-surface-card border border-line-strong p-6 sm:p-8 shadow-xl">
+        <div className="absolute top-0 right-0 -mt-10 -mr-10 w-80 h-80 rounded-full bg-brand-600/10 blur-3xl pointer-events-none" />
         <div className="relative z-10 max-w-3xl space-y-3">
-          <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full text-xs font-mono font-medium bg-accent-cyan/10 text-accent-cyan border border-accent-cyan/30">
+          <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full text-xs font-mono font-medium bg-brand-600/10 text-brand-600 border border-brand-600/30">
             <span>Academic Major Project Demonstration</span>
           </div>
-          <h2 className="text-xl sm:text-2xl font-bold text-white tracking-tight leading-snug">
+          <h2 className="text-xl sm:text-2xl font-bold text-ink-900 tracking-tight leading-snug">
             An Explainable Dynamic Graph Learning Framework for Adaptive Financial Fraud Detection under Concept Drift
           </h2>
-          <p className="text-sm text-slate-300 leading-relaxed">
+          <p className="text-sm text-ink-700 leading-relaxed">
             This dashboard integrates the verified 32-feature XGBoost baseline model artifact,
             TreeSHAP feature attributions, and historical Population Stability Index (PSI) analysis
             evaluated across sequential time blocks.
@@ -104,7 +104,7 @@ export const OverviewPage: React.FC<OverviewPageProps> = ({ onNavigate }) => {
           <div className="pt-2 flex flex-wrap gap-3">
             <button
               onClick={() => onNavigate('fraud-detection')}
-              className="inline-flex items-center gap-2 px-4 py-2 rounded-lg text-xs font-semibold bg-accent-cyan text-navy-950 hover:bg-accent-cyan/90 transition-all shadow-glow-cyan"
+              className="inline-flex items-center gap-2 px-4 py-2 rounded-lg text-xs font-semibold bg-brand-600 text-white hover:bg-brand-600/90 transition-all shadow-card"
             >
               <ShieldAlert className="w-4 h-4" />
               <span>Test Fraud Predictor</span>
@@ -112,7 +112,7 @@ export const OverviewPage: React.FC<OverviewPageProps> = ({ onNavigate }) => {
             </button>
             <button
               onClick={() => onNavigate('batch-analysis')}
-              className="inline-flex items-center gap-2 px-4 py-2 rounded-lg text-xs font-semibold bg-navy-800 text-slate-200 hover:bg-navy-700/80 border border-navy-600 transition-all"
+              className="inline-flex items-center gap-2 px-4 py-2 rounded-lg text-xs font-semibold bg-surface-hover text-ink-800 hover:bg-surface-active/80 border border-line-strong transition-all"
             >
               <FileText className="w-4 h-4" />
               <span>Score Batch CSV</span>
@@ -120,7 +120,7 @@ export const OverviewPage: React.FC<OverviewPageProps> = ({ onNavigate }) => {
             <button
               onClick={fetchOverviewData}
               disabled={loading}
-              className="inline-flex items-center gap-1.5 px-3 py-2 rounded-lg text-xs font-medium text-slate-400 hover:text-white bg-navy-800/40 border border-navy-700 hover:bg-navy-800 transition-colors"
+              className="inline-flex items-center gap-1.5 px-3 py-2 rounded-lg text-xs font-medium text-ink-500 hover:text-ink-900 bg-surface-hover/40 border border-line-strong hover:bg-surface-hover transition-colors"
             >
               <RefreshCw className={`w-3.5 h-3.5 ${loading ? 'animate-spin' : ''}`} />
               <span>Refresh Metrics</span>
@@ -131,11 +131,11 @@ export const OverviewPage: React.FC<OverviewPageProps> = ({ onNavigate }) => {
 
       {/* Error alert if backend offline */}
       {error && (
-        <div className="rounded-xl bg-accent-rose/10 border border-accent-rose/30 p-4 text-sm text-accent-rose flex items-start gap-3">
+        <div className="rounded-xl bg-danger-600/10 border border-danger-600/30 p-4 text-sm text-danger-600 flex items-start gap-3">
           <AlertCircle className="w-5 h-5 flex-shrink-0 mt-0.5" />
           <div className="space-y-1">
             <p className="font-semibold">Backend Connection Issue</p>
-            <p className="text-xs text-slate-300">{error}</p>
+            <p className="text-xs text-ink-700">{error}</p>
           </div>
         </div>
       )}
@@ -143,17 +143,17 @@ export const OverviewPage: React.FC<OverviewPageProps> = ({ onNavigate }) => {
       {/* Key Research Metric Summary Cards */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
         {/* Card 1: Active Model */}
-        <div className="rounded-xl bg-navy-900 border border-navy-700/60 p-5 space-y-2">
-          <div className="flex items-center justify-between text-slate-400">
+        <div className="rounded-xl bg-surface-card border border-line-strong p-5 space-y-2">
+          <div className="flex items-center justify-between text-ink-500">
             <span className="text-xs font-medium uppercase font-mono">Active Model</span>
-            <Cpu className="w-4 h-4 text-accent-cyan" />
+            <Cpu className="w-4 h-4 text-brand-600" />
           </div>
-          <div className="text-xl font-bold text-white tracking-tight">
+          <div className="text-xl font-bold text-ink-900 tracking-tight">
             XGBoost Baseline
           </div>
-          <div className="text-xs text-slate-400 flex items-center justify-between pt-1 border-t border-navy-800">
+          <div className="text-xs text-ink-500 flex items-center justify-between pt-1 border-t border-line">
             <span>Validation PR-AUC:</span>
-            <span className="font-mono text-accent-cyan font-semibold">
+            <span className="font-mono text-brand-600 font-semibold">
               {modelInfo?.sequential_adaptation_summary?.baseline_validation_pr_auc
                 ? modelInfo.sequential_adaptation_summary.baseline_validation_pr_auc.toFixed(4)
                 : '0.5529'}
@@ -162,17 +162,17 @@ export const OverviewPage: React.FC<OverviewPageProps> = ({ onNavigate }) => {
         </div>
 
         {/* Card 2: Graph Prototype Comparison */}
-        <div className="rounded-xl bg-navy-900 border border-navy-700/60 p-5 space-y-2">
-          <div className="flex items-center justify-between text-slate-400">
+        <div className="rounded-xl bg-surface-card border border-line-strong p-5 space-y-2">
+          <div className="flex items-center justify-between text-ink-500">
             <span className="text-xs font-medium uppercase font-mono">Graph Prototype</span>
-            <Layers className="w-4 h-4 text-accent-purple" />
+            <Layers className="w-4 h-4 text-violet-600" />
           </div>
-          <div className="text-xl font-bold text-white tracking-tight">
+          <div className="text-xl font-bold text-ink-900 tracking-tight">
             Multi-Entity Prototype
           </div>
-          <div className="text-xs text-slate-400 flex items-center justify-between pt-1 border-t border-navy-800">
+          <div className="text-xs text-ink-500 flex items-center justify-between pt-1 border-t border-line">
             <span>Validation PR-AUC:</span>
-            <span className="font-mono text-slate-300">
+            <span className="font-mono text-ink-700">
               {modelInfo?.sequential_adaptation_summary?.graph_validation_pr_auc
                 ? modelInfo.sequential_adaptation_summary.graph_validation_pr_auc.toFixed(4)
                 : '0.3923'}
@@ -181,12 +181,12 @@ export const OverviewPage: React.FC<OverviewPageProps> = ({ onNavigate }) => {
         </div>
 
         {/* Card 3: Sequential Adaptation Gain */}
-        <div className="rounded-xl bg-navy-900 border border-navy-700/60 p-5 space-y-2">
-          <div className="flex items-center justify-between text-slate-400">
+        <div className="rounded-xl bg-surface-card border border-line-strong p-5 space-y-2">
+          <div className="flex items-center justify-between text-ink-500">
             <span className="text-xs font-medium uppercase font-mono">Adaptation Gain</span>
-            <TrendingUp className="w-4 h-4 text-accent-emerald" />
+            <TrendingUp className="w-4 h-4 text-positive-600" />
           </div>
-          <div className="text-xl font-bold text-accent-emerald font-mono tracking-tight">
+          <div className="text-xl font-bold text-positive-600 font-mono tracking-tight">
             +
             {(
               (modelInfo?.sequential_adaptation_summary?.mean_sequential_adaptation_pr_auc_gain ?? 0.0762) *
@@ -194,24 +194,24 @@ export const OverviewPage: React.FC<OverviewPageProps> = ({ onNavigate }) => {
             ).toFixed(2)}
             %
           </div>
-          <div className="text-xs text-slate-400 flex items-center justify-between pt-1 border-t border-navy-800">
+          <div className="text-xs text-ink-500 flex items-center justify-between pt-1 border-t border-line">
             <span>Mean PR-AUC Gain:</span>
-            <span className="font-mono text-slate-300">Blocks 1 &rarr; 5</span>
+            <span className="font-mono text-ink-700">Blocks 1 &rarr; 5</span>
           </div>
         </div>
 
         {/* Card 4: Historical Stability */}
-        <div className="rounded-xl bg-navy-900 border border-navy-700/60 p-5 space-y-2">
-          <div className="flex items-center justify-between text-slate-400">
+        <div className="rounded-xl bg-surface-card border border-line-strong p-5 space-y-2">
+          <div className="flex items-center justify-between text-ink-500">
             <span className="text-xs font-medium uppercase font-mono">Covariate Shift</span>
-            <Activity className="w-4 h-4 text-accent-amber" />
+            <Activity className="w-4 h-4 text-warning-600" />
           </div>
-          <div className="text-xl font-bold text-white font-mono tracking-tight">
+          <div className="text-xl font-bold text-ink-900 font-mono tracking-tight">
             Median PSI &lt; 0.025
           </div>
-          <div className="text-xs text-slate-400 flex items-center justify-between pt-1 border-t border-navy-800">
+          <div className="text-xs text-ink-500 flex items-center justify-between pt-1 border-t border-line">
             <span>Non-Temporal Drift:</span>
-            <span className="text-accent-emerald font-medium">Stable</span>
+            <span className="text-positive-600 font-medium">Stable</span>
           </div>
         </div>
       </div>
@@ -219,15 +219,15 @@ export const OverviewPage: React.FC<OverviewPageProps> = ({ onNavigate }) => {
       {/* Main Grid: Architecture Validation & Top SHAP Features */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         {/* Model Benchmark Comparison Chart */}
-        <div className="rounded-xl bg-navy-900 border border-navy-700/60 p-6 space-y-4">
+        <div className="rounded-xl bg-surface-card border border-line-strong p-6 space-y-4">
           <div className="flex items-center justify-between">
             <div>
-              <h3 className="text-base font-semibold text-white">Validation Benchmark Comparison</h3>
-              <p className="text-xs text-slate-400">XGBoost Baseline vs. Graph Prototype on Validation Split</p>
+              <h3 className="text-base font-semibold text-ink-900">Validation Benchmark Comparison</h3>
+              <p className="text-xs text-ink-500">XGBoost Baseline vs. Graph Prototype on Validation Split</p>
             </div>
             <button
               onClick={() => onNavigate('model-evaluation')}
-              className="text-xs text-accent-cyan hover:underline flex items-center gap-1 font-medium"
+              className="text-xs text-brand-600 hover:underline flex items-center gap-1 font-medium"
             >
               <span>Full Details</span>
               <ArrowRight className="w-3 h-3" />
@@ -238,29 +238,26 @@ export const OverviewPage: React.FC<OverviewPageProps> = ({ onNavigate }) => {
             {comparisonData.length > 0 ? (
               <ResponsiveContainer width="100%" height="100%">
                 <BarChart data={comparisonData} margin={{ top: 15, right: 20, left: -10, bottom: 5 }}>
-                  <XAxis dataKey="name" stroke="#64748b" fontSize={11} tickLine={false} />
-                  <YAxis dataKey="prAuc" stroke="#64748b" fontSize={11} domain={[0, 1]} tickLine={false} />
+                  <XAxis dataKey="name" stroke={chartColors.axis} fontSize={11} tickLine={false} />
+                  <YAxis dataKey="prAuc" stroke={chartColors.axis} fontSize={11} domain={[0, 1]} tickLine={false} />
                   <Tooltip
-                    contentStyle={{
-                      backgroundColor: '#0c1220',
-                      border: '1px solid #1e2f4f',
-                      borderRadius: '8px',
-                      fontSize: '12px',
-                    }}
+                    contentStyle={tooltipStyle}
+                    itemStyle={tooltipItemStyle}
+                    labelStyle={tooltipLabelStyle}
                   />
-                  <Bar dataKey="prAuc" name="PR-AUC" fill="#38bdf8" radius={[4, 4, 0, 0]} />
-                  <Bar dataKey="rocAuc" name="ROC-AUC" fill="#8b5cf6" radius={[4, 4, 0, 0]} />
+                  <Bar dataKey="prAuc" name="PR-AUC" fill={chartColors.series[0]} radius={[4, 4, 0, 0]} />
+                  <Bar dataKey="rocAuc" name="ROC-AUC" fill={chartColors.series[1]} radius={[4, 4, 0, 0]} />
                 </BarChart>
               </ResponsiveContainer>
             ) : (
-              <div className="h-full flex items-center justify-center text-xs text-slate-500 font-mono">
+              <div className="h-full flex items-center justify-center text-xs text-ink-400 font-mono">
                 Loading model benchmark metrics...
               </div>
             )}
           </div>
 
-          <div className="p-3 rounded-lg bg-navy-950/80 border border-navy-800 text-xs text-slate-300 leading-relaxed">
-            <span className="font-semibold text-accent-cyan">Key Finding:</span> The tabular XGBoost baseline
+          <div className="p-3 rounded-lg bg-surface-page/80 border border-line text-xs text-ink-700 leading-relaxed">
+            <span className="font-semibold text-brand-600">Key Finding:</span> The tabular XGBoost baseline
             demonstrated higher precision-recall validation performance (0.5529 PR-AUC) than the learned
             multi-entity aggregation prototype (0.3923 PR-AUC). The deployed inference endpoint serves the verified
             XGBoost model.
@@ -268,15 +265,15 @@ export const OverviewPage: React.FC<OverviewPageProps> = ({ onNavigate }) => {
         </div>
 
         {/* Top 5 SHAP Contributing Features */}
-        <div className="rounded-xl bg-navy-900 border border-navy-700/60 p-6 space-y-4">
+        <div className="rounded-xl bg-surface-card border border-line-strong p-6 space-y-4">
           <div className="flex items-center justify-between">
             <div>
-              <h3 className="text-base font-semibold text-white">Top Influential Features (TreeSHAP)</h3>
-              <p className="text-xs text-slate-400">Mean absolute attribution values across historical records</p>
+              <h3 className="text-base font-semibold text-ink-900">Top Influential Features (TreeSHAP)</h3>
+              <p className="text-xs text-ink-500">Mean absolute attribution values across historical records</p>
             </div>
             <button
               onClick={() => onNavigate('explainability')}
-              className="text-xs text-accent-cyan hover:underline flex items-center gap-1 font-medium"
+              className="text-xs text-brand-600 hover:underline flex items-center gap-1 font-medium"
             >
               <span>View All 32</span>
               <ArrowRight className="w-3 h-3" />
@@ -291,55 +288,61 @@ export const OverviewPage: React.FC<OverviewPageProps> = ({ onNavigate }) => {
                   data={topFeaturesData}
                   margin={{ top: 5, right: 30, left: 20, bottom: 5 }}
                 >
-                  <XAxis type="number" stroke="#64748b" fontSize={11} tickLine={false} />
-                  <YAxis type="category" dataKey="name" stroke="#94a3b8" fontSize={11} tickLine={false} />
-                  <Tooltip
-                    contentStyle={{
-                      backgroundColor: '#0c1220',
-                      border: '1px solid #1e2f4f',
-                      borderRadius: '8px',
-                      fontSize: '12px',
-                    }}
+                  <XAxis type="number" stroke={chartColors.axis} fontSize={11} tickLine={false} />
+                  <YAxis
+                    type="category"
+                    dataKey="name"
+                    stroke={chartColors.axis}
+                    fontSize={11}
+                    tickLine={false}
+                    width={110}
+                    interval={0}
                   />
-                  <Bar dataKey="value" name="Mean |SHAP|" radius={[0, 4, 4, 0]}>
-                    {topFeaturesData.map((_, index) => (
-                      <Cell
-                        key={`cell-${index}`}
-                        fill={index === 0 ? '#f43f5e' : index === 1 ? '#f59e0b' : '#38bdf8'}
-                      />
-                    ))}
-                  </Bar>
+                  <Tooltip
+                    contentStyle={tooltipStyle}
+                    itemStyle={tooltipItemStyle}
+                    labelStyle={tooltipLabelStyle}
+                  />
+                  {/* One hue. Bar length already carries the ranking; colouring the
+                      top bar red would encode it twice and imply a severity the
+                      number does not carry. */}
+                  <Bar
+                    dataKey="value"
+                    name="Mean |SHAP|"
+                    fill={chartColors.magnitude}
+                    radius={[0, 4, 4, 0]}
+                  />
                 </BarChart>
               </ResponsiveContainer>
             ) : (
-              <div className="h-full flex items-center justify-center text-xs text-slate-500 font-mono">
+              <div className="h-full flex items-center justify-center text-xs text-ink-400 font-mono">
                 Loading feature importance...
               </div>
             )}
           </div>
 
-          <div className="p-3 rounded-lg bg-navy-950/80 border border-navy-800 text-xs text-slate-400">
-            <span className="font-semibold text-slate-200">Interpretability Note:</span> Features{' '}
-            <code className="text-accent-cyan font-mono">C5</code>,{' '}
-            <code className="text-accent-cyan font-mono">C13</code>, and{' '}
-            <code className="text-accent-cyan font-mono">TransactionAmt</code> hold the largest decision weight.
+          <div className="p-3 rounded-lg bg-surface-page/80 border border-line text-xs text-ink-500">
+            <span className="font-semibold text-ink-800">Interpretability Note:</span> Features{' '}
+            <code className="text-brand-600 font-mono">C5</code>,{' '}
+            <code className="text-brand-600 font-mono">C13</code>, and{' '}
+            <code className="text-brand-600 font-mono">TransactionAmt</code> hold the largest decision weight.
             TreeSHAP describes tree split attributions, not real-world causal fraud mechanisms.
           </div>
         </div>
       </div>
 
       {/* Historical Sequential Drift & Adaptation Summary */}
-      <div className="rounded-xl bg-navy-900 border border-navy-700/60 p-6 space-y-4">
+      <div className="rounded-xl bg-surface-card border border-line-strong p-6 space-y-4">
         <div className="flex items-center justify-between flex-wrap gap-2">
           <div>
-            <h3 className="text-base font-semibold text-white">Sequential Adaptation Under Temporal Drift</h3>
-            <p className="text-xs text-slate-400">
+            <h3 className="text-base font-semibold text-ink-900">Sequential Adaptation Under Temporal Drift</h3>
+            <p className="text-xs text-ink-500">
               Model performance evaluated across 5 chronological blocks (Fixed Model vs. Adaptive Retrained Model)
             </p>
           </div>
           <button
             onClick={() => onNavigate('concept-drift')}
-            className="text-xs text-accent-cyan hover:underline flex items-center gap-1 font-medium"
+            className="text-xs text-brand-600 hover:underline flex items-center gap-1 font-medium"
           >
             <span>PSI Drift Analysis</span>
             <ArrowRight className="w-3 h-3" />
@@ -349,7 +352,7 @@ export const OverviewPage: React.FC<OverviewPageProps> = ({ onNavigate }) => {
         <div className="overflow-x-auto">
           <table className="w-full text-left text-xs border-collapse">
             <thead>
-              <tr className="border-b border-navy-700 text-slate-400 font-mono uppercase bg-navy-950/60">
+              <tr className="border-b border-line-strong text-ink-500 font-mono uppercase bg-surface-page/60">
                 <th className="py-2.5 px-3">Evaluation Block</th>
                 <th className="py-2.5 px-3">Transactions</th>
                 <th className="py-2.5 px-3">Fixed PR-AUC</th>
@@ -358,19 +361,19 @@ export const OverviewPage: React.FC<OverviewPageProps> = ({ onNavigate }) => {
                 <th className="py-2.5 px-3">Covariate Shift (Excl. Time)</th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-navy-800 font-mono">
+            <tbody className="divide-y divide-line font-mono">
               {(modelInfo?.adaptive_block_results || []).map((row, idx) => {
                 const driftBlock = drift?.psi_summary_excluding_time[idx];
                 return (
-                  <tr key={row.block} className="hover:bg-navy-850/50 transition-colors">
-                    <td className="py-2.5 px-3 text-slate-300 font-semibold">Block {row.block}</td>
-                    <td className="py-2.5 px-3 text-slate-400">{row.transactions.toLocaleString()}</td>
-                    <td className="py-2.5 px-3 text-slate-300">{row.fixed_pr_auc.toFixed(4)}</td>
-                    <td className="py-2.5 px-3 text-accent-cyan font-semibold">{row.adaptive_pr_auc.toFixed(4)}</td>
-                    <td className="py-2.5 px-3 text-accent-emerald font-semibold">
+                  <tr key={row.block} className="hover:bg-surface-sunken/50 transition-colors">
+                    <td className="py-2.5 px-3 text-ink-700 font-semibold">Block {row.block}</td>
+                    <td className="py-2.5 px-3 text-ink-500">{row.transactions.toLocaleString()}</td>
+                    <td className="py-2.5 px-3 text-ink-700">{row.fixed_pr_auc.toFixed(4)}</td>
+                    <td className="py-2.5 px-3 text-brand-600 font-semibold">{row.adaptive_pr_auc.toFixed(4)}</td>
+                    <td className="py-2.5 px-3 text-positive-600 font-semibold">
                       +{((row.pr_auc_gain ?? 0) * 100).toFixed(2)}%
                     </td>
-                    <td className="py-2.5 px-3 text-slate-400">
+                    <td className="py-2.5 px-3 text-ink-500">
                       Median PSI: {driftBlock ? driftBlock.median_psi.toFixed(4) : '0.0137'}
                     </td>
                   </tr>
@@ -380,8 +383,8 @@ export const OverviewPage: React.FC<OverviewPageProps> = ({ onNavigate }) => {
           </table>
         </div>
 
-        <div className="text-[11px] text-slate-400 bg-navy-950/80 p-3 rounded-lg border border-navy-800">
-          <span className="font-semibold text-slate-300">Sequential Protocol Notice:</span> Earlier block labels were
+        <div className="text-[11px] text-ink-500 bg-surface-page/80 p-3 rounded-lg border border-line">
+          <span className="font-semibold text-ink-700">Sequential Protocol Notice:</span> Earlier block labels were
           used exclusively to retrain the adaptive model for later blocks. This represents an offline sequential
           adaptation experiment rather than a live streaming detection pipeline.
         </div>

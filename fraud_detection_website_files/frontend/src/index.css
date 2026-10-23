@@ -2,34 +2,79 @@
 @tailwind components;
 @tailwind utilities;
 
+/*
+ * Base styles for the light theme.
+ *
+ * The colour system lives in tailwind.config.js; this file sets only what a
+ * utility class cannot: the document background, the typeface, and the handful of
+ * browser surfaces (scrollbars, selection, focus rings) that have to be declared
+ * once at the root.
+ */
+
 :root {
-  color-scheme: dark;
+  color-scheme: light;
+}
+
+html {
+  scroll-behavior: smooth;
 }
 
 body {
   margin: 0;
   font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-  background-color: #070b14;
-  color: #f1f5f9;
+  background-color: #f5f7fb;
+  color: #334155;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
 }
 
-/* Custom scrollbars */
+::selection {
+  background: #dbe6fe;
+  color: #0f172a;
+}
+
+/* A visible focus ring on every interactive element, always. A fraud dashboard is
+   operated with a keyboard as often as with a mouse. */
+:where(a, button, input, select, textarea, [tabindex]):focus-visible {
+  outline: 2px solid #2457c9;
+  outline-offset: 2px;
+  border-radius: 6px;
+}
+
 ::-webkit-scrollbar {
-  width: 6px;
-  height: 6px;
+  width: 10px;
+  height: 10px;
 }
 
 ::-webkit-scrollbar-track {
-  background: #0c1220;
+  background: #eef2f8;
 }
 
 ::-webkit-scrollbar-thumb {
-  background: #1e2f4f;
-  border-radius: 4px;
+  background: #cbd6e6;
+  border: 2px solid #eef2f8;
+  border-radius: 6px;
 }
 
 ::-webkit-scrollbar-thumb:hover {
-  background: #38bdf8;
+  background: #94a3b8;
+}
+
+/* Recharts draws its own text nodes; keep them on the ink ramp rather than the
+   browser default black. */
+.recharts-cartesian-axis-tick-value,
+.recharts-legend-item-text {
+  fill: #64748b;
+  color: #64748b !important;
+  font-size: 11px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
 }

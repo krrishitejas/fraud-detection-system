@@ -1,114 +1,182 @@
-import React, { useState, useEffect } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 import {
-  ShieldAlert,
-  ShieldCheck,
-  RotateCcw,
-  Sparkles,
-  Sliders,
   AlertTriangle,
-  Info,
   ChevronDown,
   ChevronUp,
+  Eye,
+  Loader2,
+  RotateCcw,
+  ScrollText,
+  ShieldAlert,
+  ShieldCheck,
+  Sliders,
 } from 'lucide-react';
 import { apiService, formatApiError } from '../services/api';
-import type { PredictionResult, LocalFeatureContribution } from '../types/api';
+import type {
+  CategoriesResponse,
+  Classification,
+  ContractPredictResponse,
+} from '../types/api';
 
-// Group 32 features for human readability and clear form navigation
-const FEATURE_GROUPS = [
+/**
+ * Scoring one payment, through POST /api/model/predict.
+ *
+ * This page sends a payment, not a feature vector. The five text columns are
+ * chosen by name -- "visa", "gmail.com" -- and the server encodes them, because
+ * the code table is a training artefact and a copy of it living in the browser is
+ * exactly how training and serving drift apart without anyone noticing.
+ *
+ * The result panel shows more than a verdict on purpose. A fraud decision that
+ * cannot be reconstructed afterwards cannot be appealed, so the probability, the
+ * threshold it was compared against, the model and preprocessing versions, the
+ * rules that fired and what the server did with every field it was or was not
+ * given are all on screen.
+ */
+
+/* The 32 columns the model reads, grouped for a form rather than for the model. */
+const NUMERIC_GROUPS = [
   {
-    name: 'Transaction Overview',
-    description: 'Transaction amount and temporal timestamp',
-    features: ['TransactionAmt', 'TransactionDT', 'ProductCD'],
-  },
-  {
-    name: 'Payment Card Profile',
-    description: 'Numeric encoded card attributes (card1 - card6)',
-    features: ['card1', 'card2', 'card3', 'card4', 'card5', 'card6'],
-  },
-  {
-    name: 'Geographic & Address',
-    description: 'Numeric billing and distance indicators',
-    features: ['addr1', 'addr2', 'dist1', 'dist2'],
-  },
-  {
-    name: 'Email Domains (Pre-encoded)',
-    description: 'Numeric encoded purchaser and recipient domain indices',
-    features: ['P_emaildomain', 'R_emaildomain'],
-  },
-  {
-    name: 'Activity Counts (C1 - C14)',
-    description: 'Aggregated transaction frequency counters',
-    features: [
-      'C1', 'C2', 'C3', 'C4', 'C5', 'C6', 'C7',
-      'C8', 'C9', 'C10', 'C11', 'C12', 'C13', 'C14',
+    name: 'The payment',
+    hint: 'Amount is the only field the contract requires.',
+    fields: [
+      { key: 'TransactionAmt', label: 'Amount', required: true },
+      { key: 'TransactionDT', label: 'Seconds from dataset start' },
     ],
   },
   {
-    name: 'Timedeltas (D1 - D3)',
-    description: 'Days since previous transaction events',
-    features: ['D1', 'D2', 'D3'],
+    name: 'Card',
+    hint: 'card1 and card2 identify the card; card3 and card5 are issuer attributes.',
+    fields: [
+      { key: 'card1', label: 'card1' },
+      { key: 'card2', label: 'card2' },
+      { key: 'card3', label: 'card3' },
+      { key: 'card5', label: 'card5' },
+    ],
   },
-];
+  {
+    name: 'Address and distance',
+    hint: 'Leave the address blank to see the geo-mismatch rule fire.',
+    fields: [
+      { key: 'addr1', label: 'addr1 (billing region)' },
+      { key: 'addr2', label: 'addr2 (billing country)' },
+      { key: 'dist1', label: 'dist1' },
+      { key: 'dist2', label: 'dist2' },
+    ],
+  },
+  {
+    name: 'Counting columns (C1–C14)',
+    hint:
+      'Vesta published that these count things associated with the card, but not ' +
+      'what each one counts. C1 at or above its 99th percentile fires a rule.',
+    collapsible: true,
+    fields: Array.from({ length: 14 }, (_, i) => ({
+      key: `C${i + 1}`,
+      label: `C${i + 1}`,
+    })),
+  },
+  {
+    name: 'Timedeltas (D1–D3)',
+    hint: 'Days since a previous event on the same card.',
+    fields: [
+      { key: 'D1', label: 'D1' },
+      { key: 'D2', label: 'D2' },
+      { key: 'D3', label: 'D3' },
+    ],
+  },
+] as const;
+
+const CATEGORY_FIELDS = [
+  { key: 'ProductCD', label: 'Product code' },
+  { key: 'card4', label: 'Card network' },
+  { key: 'card6', label: 'Card type' },
+  { key: 'P_emaildomain', label: 'Purchaser email domain' },
+  { key: 'R_emaildomain', label: 'Recipient email domain' },
+] as const;
+
+const DEFAULTS: Record<string, string> = {
+  TransactionAmt: '68.5', TransactionDT: '86400',
+  card1: '13926', card2: '361', card3: '150', card5: '142',
+  addr1: '315', addr2: '87', dist1: '19', dist2: '',
+  C1: '1', C2: '1', C3: '0', C4: '0', C5: '0', C6: '1', C7: '0',
+  C8: '0', C9: '1', C10: '0', C11: '1', C12: '0', C13: '1', C14: '1',
+  D1: '14', D2: '', D3: '13',
+  ProductCD: 'W', card4: 'discover', card6: 'credit',
+  P_emaildomain: 'gmail.com', R_emaildomain: '',
+};
+
+const OUTCOME: Record<Classification, {
+  label: string; icon: React.ElementType; tone: string; chip: string; blurb: string;
+}> = {
+  FRAUD: {
+    label: 'Flagged as fraud',
+    icon: ShieldAlert,
+    tone: 'border-danger-100 bg-danger-50',
+    chip: 'bg-danger-600 text-white',
+    blurb: 'At or above the cutoff. This payment would be held.',
+  },
+  REVIEW: {
+    label: 'Sent to review',
+    icon: Eye,
+    tone: 'border-warning-100 bg-warning-50',
+    chip: 'bg-warning-600 text-white',
+    blurb: 'Below the cutoff but above the review floor — an analyst decides.',
+  },
+  LEGITIMATE: {
+    label: 'Approved',
+    icon: ShieldCheck,
+    tone: 'border-positive-100 bg-positive-50',
+    chip: 'bg-positive-600 text-white',
+    blurb: 'Below the review floor. This payment would go through.',
+  },
+};
 
 export const FraudDetectionPage: React.FC = () => {
-  const [features, setFeatures] = useState<Record<string, number>>({});
-  const [loadingSample, setLoadingSample] = useState<boolean>(false);
-  const [submitting, setSubmitting] = useState<boolean>(false);
-  const [result, setResult] = useState<PredictionResult | null>(null);
+  const [form, setForm] = useState<Record<string, string>>(DEFAULTS);
+  const [categories, setCategories] = useState<CategoriesResponse | null>(null);
+  const [result, setResult] = useState<ContractPredictResponse | null>(null);
+  const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [collapsedGroups, setCollapsedGroups] = useState<Record<string, boolean>>({
-    'Activity Counts (C1 - C14)': false,
+  const [collapsed, setCollapsed] = useState<Record<string, boolean>>({
+    'Counting columns (C1–C14)': true,
   });
 
-  // Load sample transaction on initial mount
   useEffect(() => {
-    loadSample();
+    apiService
+      .getCategories()
+      .then(setCategories)
+      .catch(() => setCategories(null));
   }, []);
 
-  const loadSample = async () => {
-    setLoadingSample(true);
-    setError(null);
-    try {
-      const sample = await apiService.getSampleTransaction();
-      setFeatures(sample.features);
-    } catch (err) {
-      setError(formatApiError(err));
-    } finally {
-      setLoadingSample(false);
+  const set = (key: string, value: string) =>
+    setForm((prev) => ({ ...prev, [key]: value }));
+
+  /* An empty box means "this payment has no such value", which is a different
+     thing from zero, so the field is left out of the request entirely and the
+     server fills it the way training did. */
+  const body = useMemo(() => {
+    const transaction: Record<string, string | number> = {};
+    for (const [key, raw] of Object.entries(form)) {
+      const value = raw.trim();
+      if (!value) continue;
+      transaction[key] = CATEGORY_FIELDS.some((f) => f.key === key)
+        ? value
+        : Number(value);
     }
-  };
+    return transaction;
+  }, [form]);
 
-  const handleInputChange = (key: string, valStr: string) => {
-    const val = parseFloat(valStr);
-    setFeatures((prev) => ({
-      ...prev,
-      [key]: isNaN(val) ? 0 : val,
-    }));
-  };
-
-  const toggleGroup = (groupName: string) => {
-    setCollapsedGroups((prev) => ({ ...prev, [groupName]: !prev[groupName] }));
-  };
-
-  const handleSubmit = async (e: React.FormEvent) => {
+  const submit = async (e: React.FormEvent) => {
     e.preventDefault();
     setSubmitting(true);
     setError(null);
     setResult(null);
-
-    // Validate all numeric
-    for (const [k, v] of Object.entries(features)) {
-      if (typeof v !== 'number' || isNaN(v)) {
-        setError(`Feature '${k}' must be a valid number.`);
-        setSubmitting(false);
-        return;
-      }
-    }
-
     try {
-      const res = await apiService.predictSingle({
-        features,
-        include_explanation: true,
+      const res = await apiService.contractPredict({
+        payload_type: 'raw_transaction',
+        transaction_id: Math.floor(2_987_000 + Math.random() * 100_000),
+        transaction_dt: Number(form.TransactionDT || 86400),
+        return_explanation: true,
+        transaction: body,
       });
       setResult(res);
     } catch (err) {
@@ -118,270 +186,354 @@ export const FraudDetectionPage: React.FC = () => {
     }
   };
 
-  // Find maximum TreeSHAP value for relative bar width
-  const maxShap = result?.local_explanations
-    ? Math.max(...result.local_explanations.map((x) => x.abs_contribution), 0.001)
-    : 1;
+  const outcome = result ? OUTCOME[result.classification] : null;
+  const OutcomeIcon = outcome?.icon ?? ShieldCheck;
 
   return (
-    <div className="space-y-6">
-      {/* Informational Guidance Notice */}
-      <div className="rounded-xl bg-navy-900 border border-accent-cyan/30 p-5 shadow-lg">
-        <div className="flex items-start gap-3">
-          <Info className="w-5 h-5 text-accent-cyan flex-shrink-0 mt-0.5" />
-          <div className="space-y-1.5 text-xs text-slate-300">
-            <h3 className="font-semibold text-white text-sm">
-              Input Preprocessing & Encoding Notice
-            </h3>
-            <p>
-              The trained model artifact requires <strong className="text-white">32 numeric, pre-encoded features</strong>.
-              Categorical attributes (<code className="text-accent-cyan font-mono">ProductCD</code>,{' '}
-              <code className="text-accent-cyan font-mono">card4</code>,{' '}
-              <code className="text-accent-cyan font-mono">card6</code>,{' '}
-              <code className="text-accent-cyan font-mono">P_emaildomain</code>,{' '}
-              <code className="text-accent-cyan font-mono">R_emaildomain</code>) were converted to numeric values during Colab
-              training. Raw strings cannot be evaluated without the original category mappings.
-            </p>
-            <p className="text-slate-400">
-              Use the <span className="text-accent-cyan font-medium">Load Baseline Sample</span> button below to populate the
-              form with verified training medians, then modify amounts or count values to test decision boundaries.
-            </p>
-          </div>
-        </div>
-      </div>
+    <div className="grid lg:grid-cols-5 gap-6">
+      {/* ------------------------------------------------------------- form */}
+      <form onSubmit={submit} className="lg:col-span-3 space-y-5">
+        <section className="bg-surface-card border border-line rounded-xl shadow-card">
+          <header className="px-5 py-4 border-b border-line flex items-center gap-3">
+            <span className="w-8 h-8 rounded-lg bg-brand-50 border border-brand-100 flex items-center justify-center">
+              <Sliders className="w-4 h-4 text-brand-600" />
+            </span>
+            <div>
+              <h2 className="text-sm font-semibold text-ink-900">The payment</h2>
+              <p className="text-xs text-ink-500 mt-0.5">
+                Text fields are sent as text and encoded on the server. An empty box
+                means absent, which is not the same as zero.
+              </p>
+            </div>
+          </header>
 
-      {/* Grid: Left Input Form, Right Result Panel */}
-      <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
-        {/* Form Panel */}
-        <div className="lg:col-span-7 space-y-4">
-          <div className="rounded-xl bg-navy-900 border border-navy-700/60 p-5 shadow-lg space-y-4">
-            <div className="flex items-center justify-between pb-3 border-b border-navy-700/60 flex-wrap gap-2">
-              <div>
-                <h3 className="text-base font-bold text-white">Transaction Features</h3>
-                <p className="text-xs text-slate-400">Provide 32 numeric attributes for XGBoost inference</p>
+          <div className="p-5 space-y-6">
+            {/* categories */}
+            <div>
+              <h3 className="text-xs font-semibold uppercase tracking-wide text-ink-500 mb-3">
+                Categories
+              </h3>
+              <div className="grid sm:grid-cols-2 gap-3">
+                {CATEGORY_FIELDS.map((f) => {
+                  const options = categories?.columns[f.key]?.values ?? [];
+                  return (
+                    <label key={f.key} className="block">
+                      <span className="text-xs text-ink-600">{f.label}</span>
+                      <select
+                        value={form[f.key] ?? ''}
+                        onChange={(e) => set(f.key, e.target.value)}
+                        className="mt-1 w-full px-3 py-2 text-sm rounded-md border border-line-strong bg-surface-card text-ink-800 focus:border-brand-500"
+                      >
+                        <option value="">— absent —</option>
+                        {options.map((v) => (
+                          <option key={v} value={v}>
+                            {v}
+                          </option>
+                        ))}
+                      </select>
+                      <span className="text-[11px] text-ink-400 font-mono">
+                        {options.length > 0
+                          ? `${options.length} values known`
+                          : 'vocabulary unavailable'}
+                      </span>
+                    </label>
+                  );
+                })}
               </div>
-              <button
-                type="button"
-                onClick={loadSample}
-                disabled={loadingSample}
-                className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium text-accent-cyan bg-accent-cyan/10 hover:bg-accent-cyan/20 border border-accent-cyan/30 transition-all"
-              >
-                <RotateCcw className={`w-3.5 h-3.5 ${loadingSample ? 'animate-spin' : ''}`} />
-                <span>Load Baseline Sample</span>
-              </button>
             </div>
 
-            <form onSubmit={handleSubmit} className="space-y-4">
-              {FEATURE_GROUPS.map((group) => {
-                const isCollapsed = collapsedGroups[group.name];
-                return (
-                  <div
-                    key={group.name}
-                    className="rounded-lg bg-navy-950/60 border border-navy-800 overflow-hidden"
+            {/* numerics */}
+            {NUMERIC_GROUPS.map((group) => {
+              const isCollapsed = collapsed[group.name];
+              return (
+                <div key={group.name}>
+                  <button
+                    type="button"
+                    onClick={() =>
+                      'collapsible' in group && group.collapsible
+                        ? setCollapsed((p) => ({ ...p, [group.name]: !p[group.name] }))
+                        : undefined
+                    }
+                    className="w-full flex items-center justify-between text-left mb-2"
                   >
-                    <button
-                      type="button"
-                      onClick={() => toggleGroup(group.name)}
-                      className="w-full px-4 py-3 flex items-center justify-between text-left hover:bg-navy-800/40 transition-colors"
-                    >
-                      <div>
-                        <div className="text-xs font-semibold text-slate-200">{group.name}</div>
-                        <div className="text-[11px] text-slate-400">{group.description}</div>
-                      </div>
-                      {isCollapsed ? (
-                        <ChevronDown className="w-4 h-4 text-slate-400" />
+                    <span>
+                      <span className="text-xs font-semibold uppercase tracking-wide text-ink-500">
+                        {group.name}
+                      </span>
+                      <span className="block text-[11px] text-ink-400 mt-0.5 normal-case font-normal tracking-normal">
+                        {group.hint}
+                      </span>
+                    </span>
+                    {'collapsible' in group && group.collapsible ? (
+                      isCollapsed ? (
+                        <ChevronDown className="w-4 h-4 text-ink-400 shrink-0" />
                       ) : (
-                        <ChevronUp className="w-4 h-4 text-slate-400" />
-                      )}
-                    </button>
+                        <ChevronUp className="w-4 h-4 text-ink-400 shrink-0" />
+                      )
+                    ) : null}
+                  </button>
+                  {!isCollapsed && (
+                    <div className="grid sm:grid-cols-4 gap-3">
+                      {group.fields.map((f) => (
+                        <label key={f.key} className="block">
+                          <span className="text-xs text-ink-600">
+                            {f.label}
+                            {'required' in f && f.required && (
+                              <span className="text-danger-600"> *</span>
+                            )}
+                          </span>
+                          <input
+                            type="number"
+                            step="any"
+                            value={form[f.key] ?? ''}
+                            onChange={(e) => set(f.key, e.target.value)}
+                            placeholder="absent"
+                            className="mt-1 w-full px-3 py-2 text-sm font-mono rounded-md border border-line-strong bg-surface-card text-ink-800 placeholder:text-ink-400 focus:border-brand-500"
+                          />
+                        </label>
+                      ))}
+                    </div>
+                  )}
+                </div>
+              );
+            })}
+          </div>
 
-                    {!isCollapsed && (
-                      <div className="p-4 pt-1 grid grid-cols-2 sm:grid-cols-3 gap-3 border-t border-navy-800/60">
-                        {group.features.map((feat) => (
-                          <div key={feat} className="space-y-1">
-                            <label className="block text-[11px] font-mono text-slate-400 truncate" title={feat}>
-                              {feat}
-                            </label>
-                            <input
-                              type="number"
-                              step="any"
-                              value={features[feat] ?? ''}
-                              onChange={(e) => handleInputChange(feat, e.target.value)}
-                              className="w-full px-2.5 py-1.5 text-xs font-mono bg-navy-900 border border-navy-700 rounded-md text-white focus:outline-none focus:border-accent-cyan focus:ring-1 focus:ring-accent-cyan transition-colors"
-                              placeholder="0.0"
-                            />
-                          </div>
-                        ))}
+          <footer className="px-5 py-4 border-t border-line flex items-center gap-3">
+            <button
+              type="submit"
+              disabled={submitting}
+              className="inline-flex items-center gap-2 px-4 py-2 rounded-md bg-brand-600 text-white text-sm font-semibold hover:bg-brand-700 disabled:opacity-60"
+            >
+              {submitting ? (
+                <Loader2 className="w-4 h-4 animate-spin" />
+              ) : (
+                <ShieldAlert className="w-4 h-4" />
+              )}
+              Score this payment
+            </button>
+            <button
+              type="button"
+              onClick={() => {
+                setForm(DEFAULTS);
+                setResult(null);
+                setError(null);
+              }}
+              className="inline-flex items-center gap-2 px-3 py-2 rounded-md border border-line-strong text-ink-700 text-sm hover:bg-surface-hover"
+            >
+              <RotateCcw className="w-3.5 h-3.5" /> Reset
+            </button>
+          </footer>
+        </section>
+      </form>
+
+      {/* ----------------------------------------------------------- result */}
+      <div className="lg:col-span-2 space-y-5">
+        {error && (
+          <div className="bg-danger-50 border border-danger-100 rounded-xl p-4 flex gap-3">
+            <AlertTriangle className="w-5 h-5 text-danger-600 shrink-0 mt-0.5" />
+            <div>
+              <p className="text-sm font-semibold text-danger-700">
+                The service refused this request
+              </p>
+              <p className="text-xs text-ink-600 mt-1 break-words">{error}</p>
+            </div>
+          </div>
+        )}
+
+        {!result && !error && (
+          <div className="bg-surface-card border border-dashed border-line-strong rounded-xl p-8 text-center">
+            <ShieldCheck className="w-7 h-7 text-ink-400 mx-auto mb-3" />
+            <p className="text-sm text-ink-600">No payment scored yet.</p>
+            <p className="text-xs text-ink-500 mt-1">
+              The result will show the probability, the cutoff it was compared
+              against, and everything needed to reconstruct the decision later.
+            </p>
+          </div>
+        )}
+
+        {result && outcome && (
+          <>
+            <section className={`rounded-xl border p-5 ${outcome.tone}`}>
+              <div className="flex items-center gap-3">
+                <OutcomeIcon className="w-6 h-6 text-ink-800" />
+                <div className="min-w-0">
+                  <span
+                    className={`inline-block px-2 py-0.5 rounded-full text-[11px] font-mono font-bold ${outcome.chip}`}
+                  >
+                    {result.classification}
+                  </span>
+                  <h2 className="text-base font-semibold text-ink-900 mt-1">
+                    {outcome.label}
+                  </h2>
+                </div>
+              </div>
+              <p className="text-xs text-ink-600 mt-2">{outcome.blurb}</p>
+
+              <div className="mt-4 grid grid-cols-2 gap-3">
+                <div className="bg-surface-card/80 rounded-lg p-3 border border-line">
+                  <p className="text-[11px] uppercase tracking-wide text-ink-500 font-semibold">
+                    Fraud probability
+                  </p>
+                  <p className="text-2xl font-mono font-bold text-ink-900 mt-0.5">
+                    {result.fraud_probability.toFixed(6)}
+                  </p>
+                </div>
+                <div className="bg-surface-card/80 rounded-lg p-3 border border-line">
+                  <p className="text-[11px] uppercase tracking-wide text-ink-500 font-semibold">
+                    Compared against
+                  </p>
+                  <p className="text-2xl font-mono font-bold text-ink-900 mt-0.5">
+                    {result.threshold.toFixed(6)}
+                  </p>
+                </div>
+              </div>
+            </section>
+
+            {/* what produced this answer */}
+            <section className="bg-surface-card border border-line rounded-xl shadow-card p-5">
+              <h3 className="text-sm font-semibold text-ink-900 mb-3">
+                What produced this answer
+              </h3>
+              <dl className="text-xs">
+                {[
+                  ['Model', result.model_version],
+                  ['Preprocessing', result.preprocessing_version],
+                  ['Score scale', `${result.decision.score_scale} (${result.decision.calibration})`],
+                  ['Before calibration', result.raw_score.toFixed(6)],
+                  ['Threshold chosen by', result.decision.selection_method],
+                  ['Threshold chosen on', result.decision.selected_on_split],
+                  ['Assumed cost of a miss', `${result.decision.cost_false_negative}:${result.decision.cost_false_positive}`],
+                  ['Scored in', `${result.latency_ms.toFixed(1)} ms`],
+                  ['Request', result.request_id.slice(0, 18)],
+                  ['Stored', result.stored ? 'yes' : 'no'],
+                ].map(([k, v]) => (
+                  <div
+                    key={k as string}
+                    className="flex items-baseline justify-between gap-4 py-1.5 border-b border-line last:border-0"
+                  >
+                    <dt className="text-ink-500 shrink-0">{k}</dt>
+                    <dd className="font-mono text-ink-800 text-right break-all">{v}</dd>
+                  </div>
+                ))}
+              </dl>
+            </section>
+
+            {/* rules */}
+            <section className="bg-surface-card border border-line rounded-xl shadow-card p-5">
+              <h3 className="text-sm font-semibold text-ink-900 flex items-center gap-2">
+                <ScrollText className="w-4 h-4 text-brand-600" />
+                Rules
+                <span className="text-xs font-normal text-ink-500">
+                  {result.rules.rules_fired.length} of {result.rules.rules_evaluated} fired
+                </span>
+              </h3>
+              {result.rules.rules_fired.length === 0 ? (
+                <p className="text-xs text-ink-500 mt-2">
+                  No rule fired. The rules run beside the model, not inside it — the
+                  score above stands on its own.
+                </p>
+              ) : (
+                <ul className="mt-3 space-y-2">
+                  {result.rules.rules_fired.map((r) => (
+                    <li
+                      key={r.rule_id}
+                      className="border border-line rounded-lg p-3 bg-surface-sunken"
+                    >
+                      <div className="flex items-center justify-between gap-2 flex-wrap">
+                        <code className="text-xs font-mono font-semibold text-ink-900">
+                          {r.rule_name}
+                        </code>
+                        <span className="text-[11px] font-mono px-2 py-0.5 rounded-full bg-danger-50 text-danger-700 border border-danger-100">
+                          {r.risk_level}
+                        </span>
                       </div>
-                    )}
+                      <p className="text-[11px] font-mono text-ink-600 mt-1">
+                        {r.field} {r.operator} {r.threshold ?? ''}
+                        {r.lift_over_base_rate != null && (
+                          <span className="text-ink-400">
+                            {' '}· lift {r.lift_over_base_rate.toFixed(2)}×
+                          </span>
+                        )}
+                      </p>
+                    </li>
+                  ))}
+                </ul>
+              )}
+            </section>
+
+            {/* what the server did with the fields */}
+            <section className="bg-surface-card border border-line rounded-xl shadow-card p-5">
+              <h3 className="text-sm font-semibold text-ink-900 mb-2">
+                What the server did with your fields
+              </h3>
+              <p className="text-xs text-ink-500">
+                {result.input_report.fields_supplied} of{' '}
+                {result.input_report.fields_expected} columns came from the request.
+              </p>
+              {(['absent', 'unknown_category', 'imputed_median'] as const).map((k) => {
+                const list = result.input_report[k];
+                if (!list || list.length === 0) return null;
+                const title = {
+                  absent: 'Treated as absent (coded −1)',
+                  unknown_category: 'Not recognised (coded −1)',
+                  imputed_median: 'Filled with the training median',
+                }[k];
+                return (
+                  <div key={k} className="mt-3">
+                    <p className="text-[11px] font-semibold text-ink-600">{title}</p>
+                    <p className="text-[11px] font-mono text-ink-500 mt-1 break-words">
+                      {list.join(', ')}
+                    </p>
                   </div>
                 );
               })}
+              <p className="text-[11px] text-ink-400 mt-3 leading-relaxed">
+                {result.input_report.note}
+              </p>
+            </section>
 
-              {error && (
-                <div className="rounded-lg bg-accent-rose/10 border border-accent-rose/30 p-3 text-xs text-accent-rose flex items-start gap-2">
-                  <AlertTriangle className="w-4 h-4 flex-shrink-0 mt-0.5" />
-                  <span>{error}</span>
-                </div>
-              )}
-
-              <div className="pt-2 flex justify-end">
-                <button
-                  type="submit"
-                  disabled={submitting}
-                  className="w-full sm:w-auto inline-flex items-center justify-center gap-2 px-6 py-2.5 rounded-lg text-sm font-semibold bg-gradient-to-r from-accent-cyan to-accent-blue text-navy-950 hover:brightness-110 transition-all shadow-glow-cyan disabled:opacity-50"
-                >
-                  <Sparkles className={`w-4 h-4 ${submitting ? 'animate-spin' : ''}`} />
-                  <span>{submitting ? 'Evaluating Model...' : 'Score Transaction'}</span>
-                </button>
-              </div>
-            </form>
-          </div>
-        </div>
-
-        {/* Prediction Results Panel */}
-        <div className="lg:col-span-5 space-y-4">
-          {/* Main Result Card */}
-          <div className="rounded-xl bg-navy-900 border border-navy-700/60 p-6 shadow-lg space-y-4">
-            <div className="flex items-center justify-between pb-3 border-b border-navy-700/60">
-              <h3 className="text-base font-bold text-white">Prediction & Assessment</h3>
-              <span className="text-xs font-mono px-2 py-0.5 rounded bg-navy-800 text-slate-400 border border-navy-700">
-                Threshold: 0.50
-              </span>
-            </div>
-
-            {result ? (
-              <div className="space-y-4">
-                {/* Score Banner */}
-                <div
-                  className={`p-5 rounded-xl border text-center space-y-2 ${
-                    result.is_fraud
-                      ? 'bg-accent-rose/10 border-accent-rose/40 text-accent-rose'
-                      : 'bg-accent-emerald/10 border-accent-emerald/40 text-accent-emerald'
-                  }`}
-                >
-                  <div className="flex items-center justify-center gap-2">
-                    {result.is_fraud ? (
-                      <ShieldAlert className="w-6 h-6 text-accent-rose" />
-                    ) : (
-                      <ShieldCheck className="w-6 h-6 text-accent-emerald" />
-                    )}
-                    <span className="text-xs font-mono font-semibold uppercase tracking-wider">
-                      Model Classification
-                    </span>
-                  </div>
-
-                  <div className="text-4xl font-extrabold font-mono tracking-tight">
-                    {(result.fraud_probability * 100).toFixed(1)}%
-                  </div>
-                  <div className="text-xs text-slate-300">Fraud Probability Score</div>
-
-                  <div className="pt-2 flex items-center justify-center gap-2">
-                    <span
-                      className={`px-3 py-1 rounded-full text-xs font-bold uppercase tracking-wider ${
-                        result.is_fraud
-                          ? 'bg-accent-rose text-navy-950'
-                          : 'bg-accent-emerald text-navy-950'
-                      }`}
-                    >
-                      {result.prediction}
-                    </span>
-                    <span className="px-3 py-1 rounded-full text-xs font-mono uppercase bg-navy-950/80 text-white border border-navy-700">
-                      {result.risk_category} Risk Tier
-                    </span>
-                  </div>
-                </div>
-
-                {/* Model Metadata */}
-                <div className="grid grid-cols-2 gap-2 text-xs font-mono bg-navy-950/60 p-3 rounded-lg border border-navy-800 text-slate-400">
-                  <div>
-                    <span className="text-slate-500">Legitimate Prob:</span>{' '}
-                    <span className="text-slate-200">
-                      {(result.legitimate_probability * 100).toFixed(1)}%
-                    </span>
-                  </div>
-                  <div>
-                    <span className="text-slate-500">Threshold:</span>{' '}
-                    <span className="text-slate-200">{result.decision_threshold}</span>
-                  </div>
-                  <div className="col-span-2 truncate">
-                    <span className="text-slate-500">Model:</span>{' '}
-                    <span className="text-slate-200">{result.model_identifier}</span>
-                  </div>
-                </div>
-
-                {/* Disclaimer */}
-                <div className="p-3 rounded-lg bg-navy-950 border border-navy-800 text-[11px] text-slate-400 leading-relaxed">
-                  <strong className="text-slate-300">Research Disclaimer:</strong> This score is a demonstration of the
-                  academic XGBoost baseline model. Presentation risk tiers (low, medium, high) require empirical loss-matrix
-                  calibration before production deployment.
-                </div>
-              </div>
-            ) : (
-              <div className="py-12 px-4 text-center space-y-3">
-                <Sliders className="w-10 h-10 text-slate-600 mx-auto" />
-                <div className="text-sm font-medium text-slate-300">No Prediction Evaluated Yet</div>
-                <p className="text-xs text-slate-500 max-w-xs mx-auto">
-                  Populate transaction values and click &quot;Score Transaction&quot; to inspect model probabilities and local
-                  TreeSHAP attributions.
+            {/* explanation */}
+            {result.explanation && (
+              <section className="bg-surface-card border border-line rounded-xl shadow-card p-5">
+                <h3 className="text-sm font-semibold text-ink-900 mb-3">
+                  Which groups of fields moved the score
+                </h3>
+                <ul className="space-y-2">
+                  {result.explanation.groups.slice(0, 8).map((g) => {
+                    const max = Math.max(
+                      ...result.explanation!.groups.map((x) => Math.abs(x.contribution)),
+                    );
+                    const pct = max ? (Math.abs(g.contribution) / max) * 100 : 0;
+                    const up = g.direction === 'increases_risk';
+                    return (
+                      <li key={g.group}>
+                        <div className="flex items-baseline justify-between text-xs">
+                          <span className="text-ink-700">{g.group}</span>
+                          <span
+                            className={`font-mono ${up ? 'text-danger-700' : 'text-positive-700'}`}
+                          >
+                            {g.contribution > 0 ? '+' : ''}
+                            {g.contribution.toFixed(4)}
+                          </span>
+                        </div>
+                        <div className="h-1.5 rounded-full bg-surface-sunken mt-1 overflow-hidden">
+                          <div
+                            className={`h-full rounded-full ${up ? 'bg-danger-500' : 'bg-positive-500'}`}
+                            style={{ width: `${pct}%` }}
+                          />
+                        </div>
+                      </li>
+                    );
+                  })}
+                </ul>
+                <p className="text-[11px] text-ink-400 mt-3 leading-relaxed">
+                  {result.explanation.note}
                 </p>
-              </div>
+              </section>
             )}
-          </div>
-
-          {/* Local TreeSHAP Waterfall Card */}
-          <div className="rounded-xl bg-navy-900 border border-navy-700/60 p-6 shadow-lg space-y-4">
-            <div className="flex items-center justify-between pb-3 border-b border-navy-700/60">
-              <div>
-                <h3 className="text-base font-bold text-white">Local Feature Attribution</h3>
-                <p className="text-xs text-slate-400">TreeSHAP breakdown for this transaction</p>
-              </div>
-              <span className="text-[10px] font-mono px-2 py-0.5 rounded bg-accent-cyan/10 text-accent-cyan border border-accent-cyan/30">
-                TreeSHAP
-              </span>
-            </div>
-
-            {result?.local_explanations && result.local_explanations.length > 0 ? (
-              <div className="space-y-2.5">
-                {result.local_explanations.map((item: LocalFeatureContribution) => {
-                  const isPositive = item.direction === 'increases_risk';
-                  const widthPercent = Math.min((item.abs_contribution / maxShap) * 100, 100);
-
-                  return (
-                    <div key={item.feature} className="space-y-1 text-xs font-mono">
-                      <div className="flex justify-between items-center text-[11px]">
-                        <span className="text-slate-300 font-semibold">{item.feature}</span>
-                        <span
-                          className={
-                            isPositive ? 'text-accent-rose font-semibold' : 'text-accent-emerald font-semibold'
-                          }
-                        >
-                          {isPositive ? '+' : ''}
-                          {item.shap_value.toFixed(4)} ({isPositive ? 'Increases Risk' : 'Decreases Risk'})
-                        </span>
-                      </div>
-                      <div className="h-2 w-full bg-navy-950 rounded-full overflow-hidden">
-                        <div
-                          className={`h-full rounded-full transition-all duration-300 ${
-                            isPositive ? 'bg-accent-rose' : 'bg-accent-emerald'
-                          }`}
-                          style={{ width: `${widthPercent}%` }}
-                        />
-                      </div>
-                    </div>
-                  );
-                })}
-                <p className="text-[10px] text-slate-500 pt-1">
-                  Positive values push prediction toward Fraud; negative values push toward Legitimate.
-                </p>
-              </div>
-            ) : (
-              <div className="py-8 text-center text-xs text-slate-500 font-mono">
-                Submit a transaction to view local feature contributions.
-              </div>
-            )}
-          </div>
-        </div>
+          </>
+        )}
       </div>
     </div>
   );

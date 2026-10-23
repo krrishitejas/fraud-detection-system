@@ -11,6 +11,12 @@ import type {
   FeatureImportanceResponse,
   LocalExplanationResponse,
   DriftMonitoringResponse,
+  ContractPredictRequest,
+  ContractPredictResponse,
+  ThresholdRecord,
+  RuleCatalogueResponse,
+  AuditResponse,
+  CategoriesResponse,
 } from '../types/api';
 
 const API_BASE_URL = import.meta.env.VITE_API_URL || '/api';
@@ -44,7 +50,7 @@ export function formatApiError(error: unknown): string {
       return 'Request timed out. Please check backend server status.';
     }
     if (!axiosErr.response) {
-      return 'Cannot connect to backend server. Ensure FastAPI is running on http://127.0.0.1:8000.';
+      return 'Cannot reach the API. The backend serves this page, so if you can read this the server is up but the API is not answering — check its log.';
     }
   }
   return error instanceof Error ? error.message : 'An unexpected error occurred.';
@@ -114,6 +120,41 @@ export const apiService = {
   // Concept Drift Monitoring
   getDriftMonitoring: async (): Promise<DriftMonitoringResponse> => {
     const res = await apiClient.get<DriftMonitoringResponse>('/monitoring/drift');
+    return res.data;
+  },
+
+  /* --- The Week 4 interface contract ------------------------------------- */
+
+  // Score one payment under the contract. Unlike predictSingle, this accepts a
+  // transaction with text categories, applies the calibration, and returns the
+  // versions and threshold record the decision was made under.
+  contractPredict: async (
+    request: ContractPredictRequest,
+  ): Promise<ContractPredictResponse> => {
+    const res = await apiClient.post<ContractPredictResponse>('/model/predict', request);
+    return res.data;
+  },
+
+  getThresholdRecord: async (): Promise<ThresholdRecord> => {
+    const res = await apiClient.get<ThresholdRecord>('/model/threshold');
+    return res.data;
+  },
+
+  getRuleCatalogue: async (): Promise<RuleCatalogueResponse> => {
+    const res = await apiClient.get<RuleCatalogueResponse>('/rules');
+    return res.data;
+  },
+
+  // The category vocabulary the server knows how to encode. Fetched rather than
+  // hard-coded: the encoding table is a training artefact and copying it into the
+  // client is how training and serving drift apart.
+  getCategories: async (): Promise<CategoriesResponse> => {
+    const res = await apiClient.get<CategoriesResponse>('/model/categories');
+    return res.data;
+  },
+
+  getRecentDecisions: async (limit = 25): Promise<AuditResponse> => {
+    const res = await apiClient.get<AuditResponse>(`/audit/recent?limit=${limit}`);
     return res.data;
   },
 };
