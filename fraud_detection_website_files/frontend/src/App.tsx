@@ -8,6 +8,7 @@ import { BatchAnalysisPage } from './pages/BatchAnalysisPage';
 import { ExplainabilityPage } from './pages/ExplainabilityPage';
 import { ConceptDriftPage } from './pages/ConceptDriftPage';
 import { ModelEvaluationPage } from './pages/ModelEvaluationPage';
+import { GovernancePage } from './pages/GovernancePage';
 import { AboutResearchPage } from './pages/AboutResearchPage';
 import { apiService } from './services/api';
 import type { HealthResponse } from './types/api';
@@ -19,7 +20,7 @@ const TAB_CONFIG: Record<TabId, { title: string; subtitle: string }> = {
   },
   'fraud-detection': {
     title: 'Real-Time Fraud Detection',
-    subtitle: 'Model inference and local TreeSHAP attribution for individual transactions',
+    subtitle: 'One payment through POST /api/model/predict, with the decision record behind it',
   },
   'batch-analysis': {
     title: 'Batch CSV Analysis',
@@ -36,6 +37,10 @@ const TAB_CONFIG: Record<TabId, { title: string; subtitle: string }> = {
   'model-evaluation': {
     title: 'Model Evaluation Benchmarks',
     subtitle: 'XGBoost baseline vs. graph prototype and sequential adaptation performance',
+  },
+  governance: {
+    title: 'Decision Governance',
+    subtitle: 'The threshold record, the rule table, and every decision the service has stored',
   },
   'about-research': {
     title: 'About the Research Project',
@@ -71,7 +76,7 @@ export const App: React.FC = () => {
   const currentMeta = TAB_CONFIG[currentTab];
 
   return (
-    <div className="min-h-screen bg-navy-950 text-slate-100 flex">
+    <div className="min-h-screen bg-surface-page text-ink-900 flex">
       {/* Sidebar Navigation */}
       <Sidebar
         currentTab={currentTab}
@@ -99,11 +104,12 @@ export const App: React.FC = () => {
           {currentTab === 'explainability' && <ExplainabilityPage />}
           {currentTab === 'concept-drift' && <ConceptDriftPage />}
           {currentTab === 'model-evaluation' && <ModelEvaluationPage />}
+          {currentTab === 'governance' && <GovernancePage />}
           {currentTab === 'about-research' && <AboutResearchPage />}
         </main>
 
         {/* Footer */}
-        <footer className="border-t border-navy-800/60 bg-navy-950/80 px-6 py-4 text-center text-xs text-slate-500 font-mono">
+        <footer className="border-t border-line bg-surface-page/80 px-6 py-4 text-center text-xs text-ink-400 font-mono">
           Major Project: An Explainable Dynamic Graph Learning Framework for Adaptive Financial Fraud Detection under Concept Drift
         </footer>
       </div>

@@ -13,10 +13,10 @@ import {
   XAxis,
   YAxis,
   Tooltip,
-  Cell,
 } from 'recharts';
 import { apiService, formatApiError } from '../services/api';
 import type { FeatureImportanceResponse } from '../types/api';
+import { chartColors, tooltipStyle, tooltipItemStyle, tooltipLabelStyle } from '../theme/charts';
 
 export const ExplainabilityPage: React.FC = () => {
   const [data, setData] = useState<FeatureImportanceResponse | null>(null);
@@ -49,23 +49,23 @@ export const ExplainabilityPage: React.FC = () => {
   return (
     <div className="space-y-6">
       {/* Educational Banner */}
-      <div className="rounded-xl bg-navy-900 border border-navy-700/60 p-5 shadow-lg space-y-3">
+      <div className="rounded-xl bg-surface-card border border-line-strong p-5 shadow-lg space-y-3">
         <div className="flex items-start justify-between flex-wrap gap-4">
           <div className="space-y-1.5 max-w-2xl">
-            <h3 className="text-sm font-bold text-white flex items-center gap-2">
-              <Brain className="w-4 h-4 text-accent-cyan" />
+            <h3 className="text-sm font-bold text-ink-900 flex items-center gap-2">
+              <Brain className="w-4 h-4 text-brand-600" />
               <span>TreeSHAP Feature Attribution Methodology</span>
             </h3>
-            <p className="text-xs text-slate-300 leading-relaxed">
+            <p className="text-xs text-ink-700 leading-relaxed">
               TreeSHAP (Tree Shapley Additive Explanations) assigns each feature an attribution value for its
               contribution to the XGBoost ensemble&apos;s log-odds output. The chart below ranks the top features by{' '}
-              <strong className="text-white">Mean Absolute TreeSHAP Contribution</strong> across the study dataset.
+              <strong className="text-ink-900">Mean Absolute TreeSHAP Contribution</strong> across the study dataset.
             </p>
           </div>
           <button
             onClick={fetchImportance}
             disabled={loading}
-            className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium text-slate-300 hover:text-white bg-navy-800 hover:bg-navy-700 border border-navy-600 transition-colors"
+            className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium text-ink-700 hover:text-ink-900 bg-surface-hover hover:bg-surface-active border border-line-strong transition-colors"
           >
             <RefreshCw className={`w-3.5 h-3.5 ${loading ? 'animate-spin' : ''}`} />
             <span>Reload SHAP Data</span>
@@ -74,7 +74,7 @@ export const ExplainabilityPage: React.FC = () => {
       </div>
 
       {error && (
-        <div className="rounded-lg bg-accent-rose/10 border border-accent-rose/30 p-3.5 text-xs text-accent-rose flex items-start gap-2">
+        <div className="rounded-lg bg-danger-600/10 border border-danger-600/30 p-3.5 text-xs text-danger-600 flex items-start gap-2">
           <AlertCircle className="w-4 h-4 flex-shrink-0 mt-0.5" />
           <span>{error}</span>
         </div>
@@ -83,13 +83,13 @@ export const ExplainabilityPage: React.FC = () => {
       {/* Main Grid: Horizontal Bar Chart & Methodology Comparison */}
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
         {/* Horizontal Chart Card */}
-        <div className="lg:col-span-8 rounded-xl bg-navy-900 border border-navy-700/60 p-6 shadow-lg space-y-4">
-          <div className="flex items-center justify-between pb-3 border-b border-navy-700/60">
+        <div className="lg:col-span-8 rounded-xl bg-surface-card border border-line-strong p-6 shadow-lg space-y-4">
+          <div className="flex items-center justify-between pb-3 border-b border-line-strong">
             <div>
-              <h4 className="text-base font-bold text-white">Top 15 Influential Model Features</h4>
-              <p className="text-xs text-slate-400">Mean absolute TreeSHAP value |E[|SHAP|]|</p>
+              <h4 className="text-base font-bold text-ink-900">Top 15 Influential Model Features</h4>
+              <p className="text-xs text-ink-500">Mean absolute TreeSHAP value |E[|SHAP|]|</p>
             </div>
-            <span className="text-xs font-mono text-accent-cyan px-2 py-0.5 rounded bg-accent-cyan/10 border border-accent-cyan/30">
+            <span className="text-xs font-mono text-brand-600 px-2 py-0.5 rounded bg-brand-600/10 border border-brand-600/30">
               Total 32 Features
             </span>
           </div>
@@ -102,82 +102,81 @@ export const ExplainabilityPage: React.FC = () => {
                   data={chartData}
                   margin={{ top: 5, right: 30, left: 25, bottom: 5 }}
                 >
-                  <XAxis type="number" stroke="#64748b" fontSize={11} tickLine={false} />
-                  <YAxis type="category" dataKey="name" stroke="#94a3b8" fontSize={11} tickLine={false} />
+                  <XAxis type="number" stroke={chartColors.axis} fontSize={11} tickLine={false} />
+                  <YAxis
+                    type="category"
+                    dataKey="name"
+                    stroke={chartColors.axis}
+                    fontSize={11}
+                    tickLine={false}
+                    width={110}
+                    interval={0}
+                  />
                   <Tooltip
-                    contentStyle={{
-                      backgroundColor: '#0c1220',
-                      border: '1px solid #1e2f4f',
-                      borderRadius: '8px',
-                      fontSize: '12px',
-                    }}
+                    contentStyle={tooltipStyle}
+                    itemStyle={tooltipItemStyle}
+                    labelStyle={tooltipLabelStyle}
                     formatter={(val: unknown) => [typeof val === 'number' ? val.toFixed(4) : String(val), 'Mean |SHAP|']}
                   />
-                  <Bar dataKey="contribution" radius={[0, 4, 4, 0]}>
-                    {chartData.map((_, index) => (
-                      <Cell
-                        key={`cell-${index}`}
-                        fill={
-                          index < 3
-                            ? '#f43f5e'
-                            : index < 7
-                            ? '#f59e0b'
-                            : '#38bdf8'
-                        }
-                      />
-                    ))}
-                  </Bar>
+                  {/* One hue, for the same reason as the overview chart: the bar
+                      length is the ranking, and a red top bar would assert a
+                      severity that mean |SHAP| does not measure. */}
+                  <Bar
+                    dataKey="contribution"
+                    fill={chartColors.magnitude}
+                    radius={[0, 4, 4, 0]}
+                  />
                 </BarChart>
               </ResponsiveContainer>
             ) : (
-              <div className="h-full flex items-center justify-center text-xs text-slate-500 font-mono">
+              <div className="h-full flex items-center justify-center text-xs text-ink-400 font-mono">
                 {loading ? 'Computing and loading feature importances...' : 'No feature importance data.'}
               </div>
             )}
           </div>
 
-          <div className="flex items-center gap-4 text-xs font-mono text-slate-400 pt-2 border-t border-navy-800">
+          <div className="flex items-center gap-4 text-xs font-mono text-ink-500 pt-2 border-t border-line">
             <span className="flex items-center gap-1.5">
-              <span className="w-2.5 h-2.5 rounded-full bg-accent-rose" /> Top 3 Features (C5, C13, TransactionAmt)
+              <span className="w-2.5 h-2.5 rounded-full bg-danger-600" /> Top 3 Features (C5, C13, TransactionAmt)
             </span>
             <span className="flex items-center gap-1.5">
-              <span className="w-2.5 h-2.5 rounded-full bg-accent-amber" /> Ranks 4 - 7 (C1, C14, TransactionDT, card1)
+              <span className="w-2.5 h-2.5 rounded-full bg-warning-600" /> Ranks 4 - 7 (C1, C14, TransactionDT, card1)
             </span>
             <span className="flex items-center gap-1.5">
-              <span className="w-2.5 h-2.5 rounded-full bg-accent-cyan" /> Secondary Features
+              <span className="w-2.5 h-2.5 rounded-full bg-brand-600" /> Secondary Features
             </span>
           </div>
         </div>
 
         {/* Explainability Distinction Cards */}
         <div className="lg:col-span-4 space-y-4">
-          <div className="rounded-xl bg-navy-900 border border-navy-700/60 p-5 shadow-lg space-y-3">
-            <h4 className="text-sm font-bold text-white flex items-center gap-2">
-              <Sparkles className="w-4 h-4 text-accent-cyan" />
+          <div className="rounded-xl bg-surface-card border border-line-strong p-5 shadow-lg space-y-3">
+            <h4 className="text-sm font-bold text-ink-900 flex items-center gap-2">
+              <Sparkles className="w-4 h-4 text-brand-600" />
               <span>Global vs. Local Explanations</span>
             </h4>
-            <div className="space-y-2 text-xs text-slate-300 leading-relaxed">
+            <div className="space-y-2 text-xs text-ink-700 leading-relaxed">
               <p>
-                <strong className="text-white">Global Importance:</strong> Ranks features by their overall contribution
+                <strong className="text-ink-900">Global Importance:</strong> Ranks features by their overall contribution
                 magnitude across thousands of transactions in the study dataset.
               </p>
               <p>
-                <strong className="text-white">Local Prediction Attribution:</strong> Evaluates which specific features
+                <strong className="text-ink-900">Local Prediction Attribution:</strong> Evaluates which specific features
                 increased or decreased fraud log-odds for an individual transaction during inference (available on the
                 Fraud Detection page).
               </p>
             </div>
           </div>
 
-          <div className="rounded-xl bg-navy-900 border border-accent-amber/30 p-5 shadow-lg space-y-3">
-            <h4 className="text-sm font-bold text-white flex items-center gap-2">
-              <HelpCircle className="w-4 h-4 text-accent-amber" />
+          <div className="rounded-xl bg-surface-card border border-warning-600/30 p-5 shadow-lg space-y-3">
+            <h4 className="text-sm font-bold text-ink-900 flex items-center gap-2">
+              <HelpCircle className="w-4 h-4 text-warning-600" />
               <span>Attribution is Not Causation</span>
             </h4>
-            <p className="text-xs text-slate-300 leading-relaxed">
+            <p className="text-xs text-ink-700 leading-relaxed">
               High TreeSHAP values describe statistical decision associations within the gradient-boosted decision trees.
-              They <strong className="text-accent-amber">do not imply causal mechanisms</strong> in financial criminal behavior.
-              Features such as address region (<code className="text-slate-200">addr1</code>) or email domain are indicators,
+              They <strong className="text-warning-600">do not imply causal mechanisms</strong> in financial criminal behavior.
+              Features such as address region (<code className="text-ink-800">addr1</code>) or email domain are indicators,
               not the root cause of fraud.
             </p>
           </div>
@@ -185,40 +184,40 @@ export const ExplainabilityPage: React.FC = () => {
       </div>
 
       {/* Full 32-Feature Ranked Table */}
-      <div className="rounded-xl bg-navy-900 border border-navy-700/60 p-6 shadow-lg space-y-4">
-        <div className="flex items-center justify-between pb-3 border-b border-navy-700/60">
+      <div className="rounded-xl bg-surface-card border border-line-strong p-6 shadow-lg space-y-4">
+        <div className="flex items-center justify-between pb-3 border-b border-line-strong">
           <div>
-            <h4 className="text-base font-bold text-white">Complete Feature Importance Ranking (All 32 Features)</h4>
-            <p className="text-xs text-slate-400">Mean absolute TreeSHAP contribution values extracted from Colab evaluation</p>
+            <h4 className="text-base font-bold text-ink-900">Complete Feature Importance Ranking (All 32 Features)</h4>
+            <p className="text-xs text-ink-500">Mean absolute TreeSHAP contribution values extracted from Colab evaluation</p>
           </div>
         </div>
 
-        <div className="overflow-x-auto rounded-lg border border-navy-800">
+        <div className="overflow-x-auto rounded-lg border border-line">
           <table className="w-full text-left text-xs border-collapse">
             <thead>
-              <tr className="border-b border-navy-700 text-slate-400 font-mono uppercase bg-navy-950/80">
+              <tr className="border-b border-line-strong text-ink-500 font-mono uppercase bg-surface-page/80">
                 <th className="py-2.5 px-4 w-16">Rank</th>
                 <th className="py-2.5 px-4">Feature Name</th>
                 <th className="py-2.5 px-4">Mean |SHAP| Contribution</th>
                 <th className="py-2.5 px-4">Relative Magnitude</th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-navy-800 font-mono">
+            <tbody className="divide-y divide-line font-mono">
               {(data?.features || []).map((f) => {
                 const maxVal = data?.features[0]?.mean_absolute_shap_contribution || 1;
                 const widthPercent = (f.mean_absolute_shap_contribution / maxVal) * 100;
 
                 return (
-                  <tr key={f.feature} className="hover:bg-navy-850/50 transition-colors">
-                    <td className="py-2.5 px-4 text-slate-400 font-bold">#{f.rank}</td>
-                    <td className="py-2.5 px-4 text-accent-cyan font-semibold">{f.feature}</td>
-                    <td className="py-2.5 px-4 text-white font-semibold">
+                  <tr key={f.feature} className="hover:bg-surface-sunken/50 transition-colors">
+                    <td className="py-2.5 px-4 text-ink-500 font-bold">#{f.rank}</td>
+                    <td className="py-2.5 px-4 text-brand-600 font-semibold">{f.feature}</td>
+                    <td className="py-2.5 px-4 text-ink-900 font-semibold">
                       {f.mean_absolute_shap_contribution.toFixed(4)}
                     </td>
                     <td className="py-2.5 px-4 w-1/3">
-                      <div className="h-2 w-full bg-navy-950 rounded-full overflow-hidden">
+                      <div className="h-2 w-full bg-surface-page rounded-full overflow-hidden">
                         <div
-                          className="h-full rounded-full bg-gradient-to-r from-accent-cyan to-accent-purple"
+                          className="h-full rounded-full bg-gradient-to-r from-brand-600 to-violet-600"
                           style={{ width: `${widthPercent}%` }}
                         />
                       </div>
@@ -228,7 +227,7 @@ export const ExplainabilityPage: React.FC = () => {
               })}
               {(!data?.features || data.features.length === 0) && (
                 <tr>
-                  <td colSpan={4} className="py-8 text-center text-slate-500 font-mono">
+                  <td colSpan={4} className="py-8 text-center text-ink-400 font-mono">
                     {loading ? 'Loading ranking table...' : 'No features loaded.'}
                   </td>
                 </tr>
