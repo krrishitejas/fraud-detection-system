@@ -84,6 +84,32 @@ class ModelService:
             self.is_loaded = False
             logger.error(self.load_error, exc_info=True)
 
+    def _score(self, scaled_matrix: np.ndarray) -> np.ndarray:
+        """Fraud probability for prepared rows, from the serving registry.
+
+        These older endpoints used to score with their own copy of the model, which
+        was fine while there was one model and became wrong the moment the served
+        model became an average of seven. Two endpoints answering differently about
+        the same payment is the kind of fault nobody finds until a customer asks why
+        the dashboard and the API disagree. Both now go through one scorer.
+
+        If the registry has not loaded, these endpoints fall back to their own
+        booster rather than failing: they predate the registry and the dashboard
+        depends on them.
+        """
+        registry = self._registry()
+        if registry is not None and registry.is_loaded:
+            return registry.raw_score(scaled_matrix)
+        return self.classifier.predict_proba(scaled_matrix)[:, 1]
+
+    @staticmethod
+    def _registry():
+        try:
+            from app.services.registry_service import ServingRegistry
+            return ServingRegistry.get_instance()
+        except Exception:                                          # noqa: BLE001
+            return None
+
     def determine_risk_category(self, fraud_prob: float) -> str:
         """
         Classifies transaction into a risk category based on configurable thresholds.
@@ -106,10 +132,17 @@ class ModelService:
             return [[] for _ in range(scaled_matrix.shape[0])]
 
         try:
-            dmat = xgb.DMatrix(scaled_matrix)
-            # booster.predict with pred_contribs=True returns (N, num_features + 1)
-            # The last column is the model base margin (bias).
-            contribs = self.booster.predict(dmat, pred_contribs=True)
+            # Through the registry when it is loaded, so the contributions are
+            # averaged across the ensemble members and still add up to the score
+            # these endpoints returned.
+            registry = self._registry()
+            if registry is not None and registry.is_loaded:
+                contribs = registry.contributions(scaled_matrix)
+            else:
+                dmat = xgb.DMatrix(scaled_matrix)
+                # pred_contribs=True returns (N, num_features + 1); the last column
+                # is the model base margin.
+                contribs = self.booster.predict(dmat, pred_contribs=True)
             feature_names = self.preprocessing_service.feature_columns
 
             all_explanations: List[List[LocalFeatureContribution]] = []
@@ -143,9 +176,8 @@ class ModelService:
             raise RuntimeError(f"Prediction unavailable: {self.load_error or 'Model not loaded.'}")
 
         scaled_matrix, _ = self.preprocessing_service.transform_single(features)
-        probs = self.classifier.predict_proba(scaled_matrix)[0]
-        fraud_prob = float(probs[1])
-        legit_prob = float(probs[0])
+        fraud_prob = float(self._score(scaled_matrix)[0])
+        legit_prob = 1.0 - fraud_prob
 
         is_fraud = bool(fraud_prob >= settings.DECISION_THRESHOLD)
         prediction_label = "fraud" if is_fraud else "legitimate"
@@ -182,7 +214,7 @@ class ModelService:
             )
 
         scaled_matrix, _ = self.preprocessing_service.transform_batch(batch)
-        probs = self.classifier.predict_proba(scaled_matrix)
+        probs = self._score(scaled_matrix)
 
         explanations = (
             self.compute_local_shap(scaled_matrix, top_k=5)
@@ -197,9 +229,8 @@ class ModelService:
         med_risk_count = 0
         low_risk_count = 0
 
-        for i, prob_row in enumerate(probs):
-            fraud_prob = float(prob_row[1])
-            legit_prob = float(prob_row[0])
+        for i, fraud_prob in enumerate(float(v) for v in probs):
+            legit_prob = 1.0 - fraud_prob
             is_fraud = bool(fraud_prob >= settings.DECISION_THRESHOLD)
             prediction_label = "fraud" if is_fraud else "legitimate"
             risk_cat = self.determine_risk_category(fraud_prob)

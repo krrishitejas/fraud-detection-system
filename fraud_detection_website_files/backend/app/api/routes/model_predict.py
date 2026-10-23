@@ -21,7 +21,6 @@ from datetime import datetime, timezone
 from typing import Any, Dict, List, Optional, Tuple
 
 import numpy as np
-import xgboost as xgb
 from fastapi import APIRouter, Header, Request, Response, status
 from fastapi.responses import JSONResponse
 
@@ -88,9 +87,9 @@ def _classify(prob: float, threshold: float, review_low: float) -> Classificatio
 
 def _group_explanation(registry: ServingRegistry, scaled: np.ndarray,
                        columns: List[str]) -> Explanation:
-    dmat = xgb.DMatrix(scaled, feature_names=None)
-    contribs = registry.booster.predict(
-        dmat, pred_contribs=True, iteration_range=registry.iteration_range)[0]
+    # Through the registry, so the contributions are averaged across the ensemble
+    # members rather than taken from whichever one happens to be first.
+    contribs = registry.contributions(scaled)[0]
     base = float(contribs[-1])
     totals: Dict[str, float] = {}
     for i, col in enumerate(columns):

@@ -29,8 +29,10 @@ def test_health_endpoint(client):
     assert data["status"] == "healthy"
     assert data["model_loaded"] is True
     assert data["expected_features"] == 32
-    assert data["boosting_rounds"] == 2038
-    assert data["best_iteration"] == 1937
+    # Tree counts belong to whichever model is configured, so assert they are
+    # present and consistent rather than pinning one model's numbers.
+    assert data["boosting_rounds"] > 0
+    assert 0 < data["best_iteration"] < data["boosting_rounds"]
 
 
 def test_model_loaded_and_metadata():
@@ -38,7 +40,7 @@ def test_model_loaded_and_metadata():
     service = ModelService.get_instance()
     assert service.is_loaded is True
     assert service.num_features == 32
-    assert service.best_iteration == 1937
+    assert service.best_iteration is not None and service.best_iteration > 0
     assert service.best_score is not None
     assert service.classifier is not None
     assert service.booster is not None

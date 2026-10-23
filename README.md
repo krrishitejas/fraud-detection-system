@@ -14,7 +14,7 @@ Rishi Tejas K R and Shiva U, REVA University.
 
 | | |
 |---|---|
-| Model | XGBoost, 2,038 trees, scored at the early-stopping round 1,937 |
+| Model | XGBoost, 1,257 trees, scored at the early-stopping round 1,106 |
 | Features | 32 columns present for every payment |
 | Explanations | TreeSHAP, per payment and globally |
 | Front end | React with Vite, served by the same process |
@@ -22,24 +22,29 @@ Rishi Tejas K R and Shiva U, REVA University.
 
 ### Measured performance
 
-Reproducing the training run from the raw data gives the recorded figures exactly:
-
-```
-validation PR-AUC   0.5528777416
-validation ROC-AUC  0.9112439749
-```
-
-On the 88,081 held-out payments that come after everything the model was trained on:
+On the validation window the model reaches PR-AUC 0.582377 and ROC-AUC 0.915667.
+On the 88,081 held-out payments that come after everything the model was trained on,
+scored raw at the configured cutoff of 0.065, which is exactly what the service does:
 
 | | |
 |---|---:|
-| PR-AUC | 0.4804 |
-| ROC-AUC | 0.8913 |
-| Precision | 0.3095 |
-| Recall | 0.5873 |
-| Alert rate | 6.60% |
+| PR-AUC | 0.510865 |
+| ROC-AUC | 0.897739 |
+| Brier | 0.022872 |
+| Precision | 0.3079 |
+| Recall | 0.6307 |
+| Alert rate | 7.13% |
+| Caught / missed | 1,933 / 1,132 |
 
 A no-skill model would score 0.035 PR-AUC, which is the fraud rate in the data.
+
+The model that preceded this one scored 0.4804 PR-AUC on the same blocks. It weighted
+the fraud class by `scale_pos_weight = 27.41`, the full ratio of genuine to fraud,
+which is the standard recipe. Removing that weighting was chosen by comparing five
+strategies over three seeds each, and it is worth 0.0305 of PR-AUC and 350 more frauds
+caught. `WEEK 8/experiments/` holds the comparison. Our own harness reproduces the
+previous model's recorded figures to every decimal place held, 0.5528777416 and
+0.9112439749, which is what made that comparison trustworthy.
 
 ---
 
@@ -104,7 +109,8 @@ relationship between the inputs and fraud, which PSI cannot see because it never
 at the label. A retraining loop triggered by PSI would never have fired.
 
 **A graph prototype did not help.** A learned multi-entity aggregation scored 0.3923
-PR-AUC against the plain model's 0.5529. It summarises history rather than learning the
+PR-AUC against the then-current plain model's 0.5529 on validation. It summarises
+history rather than learning the
 structure of the payment network. Reported because a hidden negative result is worse
 than none.
 
@@ -112,20 +118,26 @@ than none.
 
 ## Honest limits
 
-- The decision threshold is a fixed `0.50` in `core/config.py` and is labelled in the
-  code as a presentation default, not a calibrated operating point. It happens to be
-  near-optimal at a 10:1 cost ratio because the fraud class was weighted by 27.41
-  during training, but it is wrong either side of that assumption.
-- No calibration layer. The service returns the model's own output.
+- The decision threshold is a fixed `0.065` in `core/config.py`. It is the cheapest
+  cutoff on the validation window at an assumed 10:1 cost of a miss against a false
+  alarm, and that ratio is our assumption, not a published figure. It is wrong either
+  side of that assumption, and it belongs with the model rather than in the code: the
+  previous model's correct cutoff was near 0.50, and carrying that value over to this
+  model would have cut recall from 0.63 to 0.33 without anything failing.
+- No calibration layer. The service returns the model's own output. The cutoff was
+  therefore re-validated on that raw scale. Dropping the class weight brought Brier
+  from 0.0417 to 0.0230 by itself, so an added calibration step now buys almost
+  nothing, which is why its absence is no longer the gap it was.
 - Nothing is persisted. Predictions, an audit trail and a review queue are designed
   and not built.
 - No authentication or rate limiting. This runs locally for demonstration.
 - Leaving one of the five encoded text columns out of a request fills it with that
   column's median, which is the code for the commonest category rather than for
   absent. Training coded absence as `-1`. Known, and not yet fixed.
-- `TransactionDT` ranks 6th by SHAP and rises with row order, so the model may be
-  learning position rather than behaviour. It should be dropped and the model
-  retrained.
+- `TransactionDT` ranks 10th by SHAP and rises with row order, so the model may be
+  learning position rather than behaviour. Removing the class weight moved it down
+  from 7th and cut its share of the model from 5.4% to 3.8%, which is an improvement
+  and not a fix. The column should be dropped and the model retrained.
 
 ---
 

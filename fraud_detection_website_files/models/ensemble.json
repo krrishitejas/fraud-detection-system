@@ -1,0 +1,80 @@
+{
+ "members": [
+  {
+   "file": "member_01_seed42.ubj",
+   "seed": 42,
+   "iteration_range": [
+    0,
+    1966
+   ],
+   "base_margin": -3.310910180509745
+  },
+  {
+   "file": "member_02_seed7.ubj",
+   "seed": 7,
+   "iteration_range": [
+    0,
+    2134
+   ],
+   "base_margin": -3.310910180509745
+  },
+  {
+   "file": "member_03_seed2026.ubj",
+   "seed": 2026,
+   "iteration_range": [
+    0,
+    1754
+   ],
+   "base_margin": -3.310910180509745
+  }
+ ],
+ "combine": "mean_logodds",
+ "trained_members": 7,
+ "shipped_members": 3,
+ "built_by": "WEEK 8/experiments/build_final_model.py",
+ "packaged_by": "WEEK 8/scripts/package_serving_models.py",
+ "sizing": [
+  {
+   "members": 1,
+   "pr_auc": 0.5102915698251217,
+   "roc_auc": 0.9007096505085465,
+   "megabytes": 31.6
+  },
+  {
+   "members": 2,
+   "pr_auc": 0.513754516944207,
+   "roc_auc": 0.9011973449081881,
+   "megabytes": 65.3
+  },
+  {
+   "members": 3,
+   "pr_auc": 0.5138313468055614,
+   "roc_auc": 0.9016442140590828,
+   "megabytes": 93.7
+  },
+  {
+   "members": 4,
+   "pr_auc": 0.5128517111771588,
+   "roc_auc": 0.9013330894359239,
+   "megabytes": 131.9
+  },
+  {
+   "members": 5,
+   "pr_auc": 0.51348414363704,
+   "roc_auc": 0.9017216718902619,
+   "megabytes": 165.2
+  },
+  {
+   "members": 6,
+   "pr_auc": 0.5143199999585153,
+   "roc_auc": 0.9019488414885843,
+   "megabytes": 194.4
+  },
+  {
+   "members": 7,
+   "pr_auc": 0.5146333242795288,
+   "roc_auc": 0.9023626202364594,
+   "megabytes": 222.3
+  }
+ ]
+}
