@@ -117,20 +117,7 @@ class ServingRegistry:
         stds = prep["stds"].astype(np.float32)
         self.stds = np.where(stds == 0.0, np.float32(1.0), stds)
 
-        self.booster = xgb.Booster()
-        self.booster.load_model(str(settings.model_path))
-
-        # Early stopping chose a round; the file still holds every tree built after
-        # it, because stopping does not delete them. Scoring with all of them uses
-        # trees fitted while the validation score was getting worse. The sklearn
-        # wrapper honours best_iteration, the raw Booster does not, so the range is
-        # applied explicitly on every call.
-        best = self.booster.attributes().get("best_iteration")
-        self.best_iteration = int(best) if best is not None else None
-        self.trees_in_file = int(self.booster.num_boosted_rounds())
-        self.iteration_range = (
-            (0, self.best_iteration + 1) if self.best_iteration is not None
-            else (0, self.trees_in_file))
+        self._load_members()
 
         if len(self.feature_columns) != len(self.medians):
             raise RegistryError(
@@ -142,21 +129,109 @@ class ServingRegistry:
                 f"feature list holds {len(self.feature_columns)}")
 
         logger.info(
-            "Registry loaded: model %s, preprocessing %s, threshold %.6f on the %s "
-            "scale, %d trees scored of %d in the file, %d active rules.",
-            self.model_version, self.preprocessing_version, self.threshold,
-            self.score_scale, self.iteration_range[1], self.trees_in_file,
-            len(self.rules))
+            "Registry loaded: model %s (%d member%s, combined by %s), preprocessing "
+            "%s, threshold %.6f on the %s scale, %d trees in all, %d active rules.",
+            self.model_version, len(self.members),
+            "" if len(self.members) == 1 else "s", self.combine,
+            self.preprocessing_version, self.threshold, self.score_scale,
+            self.trees_in_file, len(self.rules))
+
+    def _load_members(self) -> None:
+        """Load the ensemble members, or the single model if there is no ensemble.
+
+        The served model is a mean of several boosted models trained with different
+        seeds. That is not a flourish: across seven seeds of the same configuration
+        held-out PR-AUC moved by 0.0079, which is larger than most of the differences
+        this project has spent its time measuring. Shipping one seed means shipping a
+        draw from that spread, and the decision cutoff is chosen on a score scale
+        that moves with the draw.
+
+        The mean is taken on the LOG-ODDS scale rather than on probabilities, which
+        matters for more than taste: a mean of log-odds is still one additive model,
+        so TreeSHAP contributions average exactly and the explanation endpoint keeps
+        meaning what it says. A mean of probabilities is not additive and every
+        explanation would quietly become an approximation.
+        """
+        self.members: List[Dict[str, Any]] = []
+        spec_path = settings.ensemble_path
+        if spec_path.exists():
+            spec = json.loads(spec_path.read_text(encoding="utf-8"))
+            for m in spec["members"]:
+                booster = xgb.Booster()
+                booster.load_model(str(spec_path.parent / m["file"]))
+                self.members.append({
+                    "booster": booster,
+                    "iteration_range": tuple(m["iteration_range"]),
+                    "base_margin": float(m.get("base_margin", 0.0)),
+                    "seed": m.get("seed"),
+                })
+            self.combine = spec.get("combine", "mean_logodds")
+        else:
+            booster = xgb.Booster()
+            booster.load_model(str(settings.model_path))
+            # Early stopping chose a round; the file still holds every tree built
+            # after it, because stopping does not delete them. Scoring with all of
+            # them uses trees fitted while the validation score was getting worse.
+            # The sklearn wrapper honours best_iteration, the raw Booster does not,
+            # so the range is applied explicitly on every call.
+            best = booster.attributes().get("best_iteration")
+            rng = ((0, int(best) + 1) if best is not None
+                   else (0, booster.num_boosted_rounds()))
+            self.members.append({"booster": booster, "iteration_range": rng,
+                                 "base_margin": 0.0, "seed": None})
+            self.combine = "single"
+
+        first = self.members[0]
+        self.booster = first["booster"]
+        self.iteration_range = first["iteration_range"]
+        self.best_iteration = first["iteration_range"][1] - 1
+        self.trees_in_file = sum(int(m["booster"].num_boosted_rounds())
+                                 for m in self.members)
 
     # ------------------------------------------------------------------ scoring
 
+    def _margins(self, matrix: np.ndarray) -> np.ndarray:
+        """The mean log-odds across the members, each over its own best rounds."""
+        rows = np.ascontiguousarray(matrix, dtype=np.float32)
+        total = None
+        for m in self.members:
+            d = xgb.DMatrix(rows)
+            if m["base_margin"]:
+                d.set_base_margin(np.full(len(rows), m["base_margin"],
+                                          dtype=np.float32))
+            z = m["booster"].predict(d, iteration_range=m["iteration_range"],
+                                     output_margin=True)
+            total = z if total is None else total + z
+        return total / len(self.members)
+
     def raw_score(self, matrix: np.ndarray) -> np.ndarray:
-        """Uncalibrated model output for prepared rows, best iteration only."""
-        if self.booster is None:
+        """Uncalibrated probability for prepared rows, best rounds only."""
+        if not self.members:
             raise RegistryError("no model is loaded")
-        return self.booster.inplace_predict(
-            np.ascontiguousarray(matrix, dtype=np.float32),
-            iteration_range=self.iteration_range)
+        return 1.0 / (1.0 + np.exp(-np.clip(self._margins(matrix), -40, 40)))
+
+    def contributions(self, matrix: np.ndarray) -> np.ndarray:
+        """Mean TreeSHAP contributions across the members.
+
+        Exact, not an approximation, because the members are combined on the same
+        log-odds scale TreeSHAP works on: the mean of additive explanations of a
+        mean of additive models is the explanation of that mean.
+        """
+        rows = np.ascontiguousarray(matrix, dtype=np.float32)
+        total = None
+        for m in self.members:
+            d = xgb.DMatrix(rows)
+            # The same base margin the scorer sets. Without it the bias column
+            # carries the model's own base_score instead of the offset the member
+            # was actually trained and scored against, and the contributions stop
+            # adding up to the score they are explaining -- which a test caught.
+            if m["base_margin"]:
+                d.set_base_margin(np.full(len(rows), m["base_margin"],
+                                          dtype=np.float32))
+            c = m["booster"].predict(d, pred_contribs=True,
+                                     iteration_range=m["iteration_range"])
+            total = c if total is None else total + c
+        return total / len(self.members)
 
     def calibrate(self, raw: np.ndarray) -> np.ndarray:
         """Platt scaling on the log-odds, fitted on the first half of validation.

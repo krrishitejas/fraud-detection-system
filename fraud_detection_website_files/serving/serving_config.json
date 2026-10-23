@@ -1,0 +1,167 @@
+{
+ "generated_at": "2026-10-23T05:34:14+00:00",
+ "generated_by": "WEEK 8/scripts/build_serving_bundle.py",
+ "model_version": "xgb-v2.0.0",
+ "preprocessing_version": "prep-v1",
+ "threshold_config_id": 2,
+ "model_file": "ensemble.json",
+ "algorithm": "XGBoost 3.4.1, binary:logistic",
+ "n_features": 32,
+ "ensemble_members": 3,
+ "combine": "mean_logodds",
+ "best_iteration": 1965,
+ "trees_in_file": 6304,
+ "training_rows": [
+  1,
+  414446
+ ],
+ "validation_rows": [
+  414447,
+  502459
+ ],
+ "held_out_rows": [
+  502460,
+  590540
+ ],
+ "calibration": "platt",
+ "calibration_fitted_on": "validation rows 1 to 44,006",
+ "platt_coef": 1.0704044103622437,
+ "platt_intercept": 0.8344080448150635,
+ "score_scale": "calibrated",
+ "threshold_value": 0.0655,
+ "review_low": 0.03275,
+ "cost_false_negative": 10.0,
+ "cost_false_positive": 1.0,
+ "selection_method": "min_expected_cost_on_validation",
+ "selected_on_split": "validation, second half",
+ "validation_expected_cost": 7433.0,
+ "approved_by": "project team",
+ "approved_at": "2026-10-23T05:34:14+00:00",
+ "threshold_sensitivity": [
+  {
+   "cost_ratio": 1,
+   "threshold": 0.5905,
+   "alert_rate_pct": 1.569,
+   "recall": 0.3377,
+   "cost_at_half": 2404.0,
+   "cost_at_best": 2377.0,
+   "waste_pct": 1.12
+  },
+  {
+   "cost_ratio": 3,
+   "threshold": 0.308,
+   "alert_rate_pct": 2.719,
+   "recall": 0.448,
+   "cost_at_half": 6242.0,
+   "cost_at_best": 6098.0,
+   "waste_pct": 2.31
+  },
+  {
+   "cost_ratio": 5,
+   "threshold": 0.164,
+   "alert_rate_pct": 4.261,
+   "recall": 0.54,
+   "cost_at_half": 10080.0,
+   "cost_at_best": 9148.0,
+   "waste_pct": 9.25
+  },
+  {
+   "cost_ratio": 10,
+   "threshold": 0.0655,
+   "alert_rate_pct": 8.873,
+   "recall": 0.6786,
+   "cost_at_half": 19675.0,
+   "cost_at_best": 15585.0,
+   "waste_pct": 20.79
+  },
+  {
+   "cost_ratio": 20,
+   "threshold": 0.033,
+   "alert_rate_pct": 15.602,
+   "recall": 0.7778,
+   "cost_at_half": 38865.0,
+   "cost_at_best": 24978.0,
+   "waste_pct": 35.73
+  },
+  {
+   "cost_ratio": 50,
+   "threshold": 0.0205,
+   "alert_rate_pct": 22.966,
+   "recall": 0.8408,
+   "cost_at_half": 96435.0,
+   "cost_at_best": 42052.0,
+   "waste_pct": 56.39
+  }
+ ],
+ "held_out_block_metrics": {
+  "rows": 88081,
+  "frauds": 3065,
+  "pr_auc": 0.513831,
+  "roc_auc": 0.901644,
+  "brier": 0.023072,
+  "ece": 0.004957,
+  "precision": 0.266155,
+  "recall": 0.67863,
+  "f1": 0.382353,
+  "accuracy": 0.923707,
+  "tp": 2080,
+  "fp": 5735,
+  "fn": 985,
+  "tn": 79281,
+  "alert_rate_pct": 8.873,
+  "expected_cost": 15585.0
+ },
+ "rules": [
+  {
+   "rule_id": 1,
+   "rule_name": "RULE_GEO_MISMATCH",
+   "field": "addr1",
+   "operator": "IS NULL",
+   "threshold": null,
+   "risk_level": "HIGH",
+   "is_active": true,
+   "version": 1,
+   "branch": "feature/rule-geo-mismatch",
+   "description": "The billing address is absent. addr1 and addr2 are missing together on every such row, so there is no billing geography to check the payment against.",
+   "train_hits": 47624,
+   "train_hit_rate_pct": 11.491,
+   "train_fraud_rate_pct": 11.2632,
+   "train_lift": 3.2,
+   "rule_source": "Measured on IEEE-CIS training rows 1 to 414,446 by WEEK 8/scripts/build_serving_bundle.py"
+  },
+  {
+   "rule_id": 2,
+   "rule_name": "RULE_CARD_COUNT_SPIKE",
+   "field": "C1",
+   "operator": ">=",
+   "threshold": 169.0,
+   "risk_level": "HIGH",
+   "is_active": true,
+   "version": 1,
+   "branch": "feature/rule-count-spike",
+   "description": "A counting column sits at an extreme value; the cut is the 99th percentile of training rows. Vesta published that the C family counts things associated with the card but not what each one counts, so the rule is named for what is observed and not for a meaning we would be guessing.",
+   "train_hits": 4164,
+   "train_hit_rate_pct": 1.0047,
+   "train_fraud_rate_pct": 10.7589,
+   "train_lift": 3.057,
+   "rule_source": "Measured on IEEE-CIS training rows 1 to 414,446 by WEEK 8/scripts/build_serving_bundle.py"
+  },
+  {
+   "rule_id": 3,
+   "rule_name": "RULE_VELOCITY_CARD24H",
+   "field": "card_velocity_24h",
+   "operator": ">=",
+   "threshold": 10.0,
+   "risk_level": "LOW",
+   "is_active": false,
+   "version": 2,
+   "branch": "feature/rule-velocity",
+   "description": "Ten or more payments on the same card inside 24 hours. Built, measured and switched off: it fires on two training rows in five at a lift of 1.04, so leaving it on would add alerts without adding detection.",
+   "train_hits": 165187,
+   "train_hit_rate_pct": 39.8573,
+   "train_fraud_rate_pct": 3.6631,
+   "train_lift": 1.041,
+   "rule_source": "Measured on IEEE-CIS training rows 1 to 414,446 by WEEK 8/scripts/build_serving_bundle.py"
+  }
+ ]
+}

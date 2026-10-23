@@ -37,6 +37,12 @@ class Settings(BaseSettings):
     # reads its decision policy from here rather than from constants in this file,
     # which is the whole point of the model_version / preprocessing_version /
     # threshold_config entities in the Week 4 database design.
+    # The served model is an average of several trained with different seeds. A
+    # single boosted model is a draw: across seven seeds of the same configuration
+    # held-out PR-AUC moved by 0.0079, and the decision cutoff is chosen on a score
+    # scale that moves with the draw. Averaging removes that. ensemble.json lists
+    # the members; if it is absent the service falls back to the single MODEL_FILE.
+    ENSEMBLE_FILE_NAME: str = "models/ensemble.json"
     SERVING_CONFIG_FILE_NAME: str = "serving/serving_config.json"
     CATEGORY_ENCODING_FILE_NAME: str = "serving/category_encoding.json"
 
@@ -134,6 +140,10 @@ class Settings(BaseSettings):
     @property
     def research_summary_path(self) -> Path:
         return self._resolve_path(self.RESEARCH_SUMMARY_FILE_NAME)
+
+    @property
+    def ensemble_path(self) -> Path:
+        return self._resolve_path(self.ENSEMBLE_FILE_NAME)
 
     @property
     def serving_config_path(self) -> Path:

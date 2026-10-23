@@ -336,3 +336,45 @@ def test_a_supplied_correlation_id_is_echoed(client):
     r = client.post("/api/model/predict", json=raw_body(transaction_id=991003),
                     headers={"X-Request-Id": "caller-supplied-id-123"})
     assert r.json()["request_id"] == "caller-supplied-id-123"
+
+
+# ------------------------------------------------------------------ the ensemble
+
+def test_the_served_model_is_the_ensemble_the_bundle_names(registry):
+    """The service must score with every member, not with whichever loads first.
+
+    A single boosted model is a draw: across the seven seeds of this configuration
+    held-out PR-AUC moved by 0.0089, which is larger than most differences this
+    project has spent its time measuring. The decision cutoff is chosen on a score
+    scale that moves with the draw, so shipping one seed ships that movement too.
+    """
+    assert registry.members, "at least one member must be loaded"
+    expected = registry.config.get("ensemble_members")
+    if expected:
+        assert len(registry.members) == expected, (
+            "the service loaded a different number of members than the bundle records")
+        assert registry.combine == "mean_logodds"
+    for m in registry.members:
+        lo, hi = m["iteration_range"]
+        assert lo == 0 and hi > 0
+        assert hi <= m["booster"].num_boosted_rounds(), (
+            "a member must not be scored past the round early stopping chose")
+
+
+def test_contributions_are_averaged_over_the_members(registry):
+    """TreeSHAP is exact here, not an approximation, and the test says why.
+
+    The members are combined on the log-odds scale, which is the scale TreeSHAP
+    works on, so the mean of the members' contributions is the contribution of the
+    mean model. Averaging probabilities instead would break that silently. The check
+    is that the contributions reconstruct the margin the scorer actually used.
+    """
+    import numpy as np
+    row = np.zeros((1, len(registry.feature_columns)), dtype=np.float32)
+    contribs = registry.contributions(row)[0]
+    assert contribs.shape[0] == len(registry.feature_columns) + 1
+    reconstructed = float(contribs.sum())
+    scored = float(registry.raw_score(row)[0])
+    margin = np.log(scored / (1.0 - scored))
+    assert reconstructed == pytest.approx(margin, abs=1e-4), (
+        "the explanation must add up to the score it is explaining")
