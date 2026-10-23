@@ -13,6 +13,7 @@ import {
   XAxis,
   YAxis,
   Tooltip,
+  Legend,
 } from 'recharts';
 import { apiService, formatApiError } from '../services/api';
 import type {
@@ -259,6 +260,13 @@ export const OverviewPage: React.FC<OverviewPageProps> = ({ onNavigate }) => {
                     contentStyle={tooltipStyle}
                     itemStyle={tooltipItemStyle}
                     labelStyle={tooltipLabelStyle}
+                  />
+                  <Legend
+                    verticalAlign="bottom"
+                    height={28}
+                    iconType="square"
+                    iconSize={9}
+                    wrapperStyle={{ fontSize: 11, color: chartColors.axis }}
                   />
                   <Bar dataKey="prAuc" name="PR-AUC" fill={chartColors.series[0]} radius={[4, 4, 0, 0]} />
                   <Bar dataKey="rocAuc" name="ROC-AUC" fill={chartColors.series[1]} radius={[4, 4, 0, 0]} />
