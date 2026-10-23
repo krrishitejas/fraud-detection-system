@@ -277,7 +277,7 @@ export const FraudDetectionPage: React.FC = () => {
                           <span className="text-xs text-ink-600">
                             {f.label}
                             {'required' in f && f.required && (
-                              <span className="text-danger-600"> *</span>
+                              <span className="text-danger-700"> *</span>
                             )}
                           </span>
                           <input

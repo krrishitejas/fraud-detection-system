@@ -250,7 +250,7 @@ export const GovernancePage: React.FC = () => {
                   <div className="flex items-start justify-between gap-3 flex-wrap">
                     <div className="flex items-center gap-2 min-w-0">
                       {rule.is_active ? (
-                        <CheckCircle2 className="w-4 h-4 text-positive-600 shrink-0" />
+                        <CheckCircle2 className="w-4 h-4 text-positive-700 shrink-0" />
                       ) : (
                         <XCircle className="w-4 h-4 text-ink-400 shrink-0" />
                       )}

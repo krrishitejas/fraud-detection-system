@@ -101,10 +101,10 @@ export const ConceptDriftPage: React.FC = () => {
             monotonically increases with every new transaction block.
           </p>
           <div className="p-3 rounded-lg bg-surface-page border border-line text-xs text-ink-700 leading-relaxed">
-            <strong className="text-positive-600">When TransactionDT is excluded:</strong> The feature distributions
+            <strong className="text-positive-700">When TransactionDT is excluded:</strong> The feature distributions
             remain remarkably stable across all 5 chronological blocks, with median PSI between{' '}
-            <span className="font-mono text-positive-600">0.0071</span> and{' '}
-            <span className="font-mono text-positive-600">0.0246</span>, and at most 1 feature showing PSI &ge; 0.10.
+            <span className="font-mono text-positive-700">0.0071</span> and{' '}
+            <span className="font-mono text-positive-700">0.0246</span>, and at most 1 feature showing PSI &ge; 0.10.
           </div>
         </div>
 
@@ -179,9 +179,9 @@ export const ConceptDriftPage: React.FC = () => {
                 <th className="py-2.5 px-3">Median PSI (All)</th>
                 <th className="py-2.5 px-3">Mean PSI (All)</th>
                 <th className="py-2.5 px-3">PSI &ge; 0.10 (All)</th>
-                <th className="py-2.5 px-3 text-positive-600">Median PSI (No Time)</th>
-                <th className="py-2.5 px-3 text-positive-600">Mean PSI (No Time)</th>
-                <th className="py-2.5 px-3 text-positive-600">PSI &ge; 0.10 (No Time)</th>
+                <th className="py-2.5 px-3 text-positive-700">Median PSI (No Time)</th>
+                <th className="py-2.5 px-3 text-positive-700">Mean PSI (No Time)</th>
+                <th className="py-2.5 px-3 text-positive-700">PSI &ge; 0.10 (No Time)</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-line font-mono">
@@ -194,10 +194,10 @@ export const ConceptDriftPage: React.FC = () => {
                     <td className="py-2.5 px-3 text-ink-700">{item.median_psi.toFixed(4)}</td>
                     <td className="py-2.5 px-3 text-ink-700">{item.mean_psi.toFixed(4)}</td>
                     <td className="py-2.5 px-3 text-ink-500">{item.features_psi_over_010}</td>
-                    <td className="py-2.5 px-3 text-positive-600 font-semibold">
+                    <td className="py-2.5 px-3 text-positive-700 font-semibold">
                       {noTime?.median_psi?.toFixed(4) ?? '-'}
                     </td>
-                    <td className="py-2.5 px-3 text-positive-600 font-semibold">
+                    <td className="py-2.5 px-3 text-positive-700 font-semibold">
                       {noTime?.mean_psi?.toFixed(4) ?? '-'}
                     </td>
                     <td className="py-2.5 px-3 text-ink-700 font-semibold">

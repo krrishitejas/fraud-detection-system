@@ -104,7 +104,7 @@ export const ModelEvaluationPage: React.FC = () => {
               <h4 className="text-base font-bold text-ink-900">Validation Metric Benchmark</h4>
               <p className="text-xs text-ink-500">Precision-Recall AUC vs. ROC-AUC on Validation Split</p>
             </div>
-            <span className="text-xs font-mono text-positive-600 px-2 py-0.5 rounded bg-positive-600/10 border border-positive-600/30">
+            <span className="text-xs font-mono text-positive-700 px-2 py-0.5 rounded bg-positive-600/10 border border-positive-600/30">
               Verified Metrics
             </span>
           </div>
@@ -215,7 +215,7 @@ export const ModelEvaluationPage: React.FC = () => {
               PR-AUC improvement across 5 chronological blocks when retraining on previous labeled blocks
             </p>
           </div>
-          <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-mono font-semibold bg-positive-600/10 text-positive-600 border border-positive-600/30">
+          <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-mono font-semibold bg-positive-600/10 text-positive-700 border border-positive-600/30">
             <TrendingUp className="w-3.5 h-3.5" />
             <span>Mean Adaptation Gain: +7.62%</span>
           </div>
@@ -272,7 +272,7 @@ export const ModelEvaluationPage: React.FC = () => {
                     <td className="py-2 px-3 text-ink-700 font-bold">Block {b.block}</td>
                     <td className="py-2 px-3 text-ink-500">{b.fixed_pr_auc.toFixed(4)}</td>
                     <td className="py-2 px-3 text-brand-600 font-semibold">{b.adaptive_pr_auc.toFixed(4)}</td>
-                    <td className="py-2 px-3 text-positive-600 font-semibold">
+                    <td className="py-2 px-3 text-positive-700 font-semibold">
                       +{((b.pr_auc_gain ?? 0) * 100).toFixed(2)}%
                     </td>
                   </tr>

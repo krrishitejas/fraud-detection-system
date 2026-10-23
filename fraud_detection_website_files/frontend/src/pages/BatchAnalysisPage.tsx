@@ -243,7 +243,7 @@ export const BatchAnalysisPage: React.FC = () => {
           <div>
             <div className="flex items-center justify-between pb-3 border-b border-line">
               <h3 className="text-base font-bold text-ink-900 flex items-center gap-2">
-                <CheckCircle2 className="w-5 h-5 text-positive-600" />
+                <CheckCircle2 className="w-5 h-5 text-positive-700" />
                 <span>Batch Evaluation Results: {results.filename}</span>
               </h3>
               <span className="text-xs font-mono text-ink-500">
@@ -265,8 +265,8 @@ export const BatchAnalysisPage: React.FC = () => {
                 </div>
               </div>
               <div className="p-4 rounded-lg bg-surface-page border border-positive-600/30">
-                <div className="text-xs text-positive-600 font-mono">Predicted Legitimate</div>
-                <div className="text-2xl font-bold font-mono text-positive-600 mt-1">
+                <div className="text-xs text-positive-700 font-mono">Predicted Legitimate</div>
+                <div className="text-2xl font-bold font-mono text-positive-700 mt-1">
                   {results.legitimate_count.toLocaleString()}
                 </div>
               </div>
@@ -334,7 +334,7 @@ export const BatchAnalysisPage: React.FC = () => {
                       ? 'bg-danger-600/10 text-danger-600 border-danger-600/30'
                       : row.risk_category === 'medium'
                       ? 'bg-warning-600/10 text-warning-600 border-warning-600/30'
-                      : 'bg-positive-600/10 text-positive-600 border-positive-600/30';
+                      : 'bg-positive-600/10 text-positive-700 border-positive-600/30';
 
                   return (
                     <tr key={row.row_index} className="hover:bg-surface-sunken/50 transition-colors">
@@ -351,7 +351,7 @@ export const BatchAnalysisPage: React.FC = () => {
                           className={`px-2 py-0.5 rounded text-[11px] font-bold uppercase ${
                             isFraud
                               ? 'bg-danger-600/20 text-danger-600 border border-danger-600/30'
-                              : 'bg-positive-600/20 text-positive-600 border-positive-600/30'
+                              : 'bg-positive-600/20 text-positive-700 border-positive-600/30'
                           }`}
                         >
                           {row.prediction}

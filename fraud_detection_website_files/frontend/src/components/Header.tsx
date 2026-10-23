@@ -45,7 +45,7 @@ export const Header: React.FC<HeaderProps> = ({
         <div
           className={`flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium border ${
             isHealthy
-              ? 'bg-positive-600/10 text-positive-600 border-positive-600/30'
+              ? 'bg-positive-600/10 text-positive-700 border-positive-600/30'
               : 'bg-danger-600/10 text-danger-600 border-danger-600/30'
           }`}
         >

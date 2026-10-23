@@ -28,7 +28,7 @@ export const AboutResearchPage: React.FC = () => {
       {/* Section 1: Problem Statement & Motivation */}
       <div className="rounded-xl bg-surface-card border border-line p-6 shadow-card space-y-3">
         <h3 className="text-base font-bold text-ink-900 flex items-center gap-2">
-          <Target className="w-5 h-5 text-danger-600" />
+          <Target className="w-5 h-5 text-danger-700" />
           <span>1. Problem Statement & Motivation</span>
         </h3>
         <div className="text-xs text-ink-700 space-y-2.5 leading-relaxed">
@@ -128,7 +128,7 @@ export const AboutResearchPage: React.FC = () => {
       {/* Section 4: Concept Drift & Sequential Adaptation */}
       <div className="rounded-xl bg-surface-card border border-line p-6 shadow-card space-y-3">
         <h3 className="text-base font-bold text-ink-900 flex items-center gap-2">
-          <Activity className="w-4 h-4 text-positive-600" />
+          <Activity className="w-4 h-4 text-positive-700" />
           <span>4. Concept Drift (PSI) & Sequential Adaptation</span>
         </h3>
         <div className="text-xs text-ink-700 space-y-2.5 leading-relaxed">
@@ -144,7 +144,7 @@ export const AboutResearchPage: React.FC = () => {
             </li>
             <li>
               <strong className="text-ink-900">Sequential Retraining Gain:</strong> Retraining models adaptively using prior
-              labeled blocks yielded a <strong className="text-positive-600">+7.62% mean PR-AUC gain</strong> over a fixed
+              labeled blocks yielded a <strong className="text-positive-700">+7.62% mean PR-AUC gain</strong> over a fixed
               model (with Block 5 achieving a 0.6228 PR-AUC vs. 0.4865 fixed).
             </li>
           </ul>

@@ -203,7 +203,7 @@ export const OverviewPage: React.FC<OverviewPageProps> = ({ onNavigate }) => {
           <div className="flex items-center justify-between text-ink-500">
             <span className="text-xs font-medium text-ink-600">Adaptation Gain</span>
           </div>
-          <div className="text-xl font-bold text-positive-600 font-mono tracking-tight">
+          <div className="text-xl font-bold text-positive-700 font-mono tracking-tight">
             +
             {(
               (modelInfo?.sequential_adaptation_summary?.mean_sequential_adaptation_pr_auc_gain ?? 0.0762) *
@@ -227,7 +227,7 @@ export const OverviewPage: React.FC<OverviewPageProps> = ({ onNavigate }) => {
           </div>
           <div className="text-xs text-ink-500 flex items-center justify-between pt-1 border-t border-line">
             <span>Non-Temporal Drift:</span>
-            <span className="text-positive-600 font-medium">Stable</span>
+            <span className="text-positive-700 font-medium">Stable</span>
           </div>
         </div>
       </div>

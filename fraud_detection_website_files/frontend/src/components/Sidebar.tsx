@@ -122,7 +122,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
             <div
               className={`inline-flex items-center gap-1.5 px-2 py-0.5 rounded-full font-mono text-[11px] border ${
                 isHealthy
-                  ? 'bg-positive-600/10 text-positive-600 border-positive-600/30'
+                  ? 'bg-positive-600/10 text-positive-700 border-positive-600/30'
                   : 'bg-danger-600/10 text-danger-600 border-danger-600/30'
               }`}
             >
