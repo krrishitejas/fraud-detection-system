@@ -1,3 +1,20 @@
+"""
+Turning a payment into the 32 numbers the model was trained on.
+
+The one rule this file exists to enforce is that serving must repeat training
+exactly. Training filled a missing numeric field with that column's training median,
+coded a missing category as -1, and did the arithmetic in float32. Serving does the
+same three things, in the same order, or the model is being asked about rows it has
+never seen the like of.
+
+That middle one was a real defect, found in the Week 8 review and fixed here. Leaving
+a text column out of a request used to fill it with the column's *median code*, which
+is the code for the commonest category, not for absent. P_emaildomain's median is 16,
+the commonest sender domain -- so a payment with no sender domain was being scored as
+though it came from the most ordinary one there is. 15,910 of the 88,081 held-out rows
+genuinely have no sender domain, and the fault flipped 518 decisions at the serving
+cutoff. Categories now fill with -1, which is what training meant by absent.
+"""
 import json
 from pathlib import Path
 from typing import Dict, List, Any, Tuple
@@ -8,6 +25,11 @@ from app.core.config import settings
 from app.utils.logging_config import get_logger
 
 logger = get_logger(__name__)
+
+# The five columns IEEE-CIS supplies as text. Training coded each one to an integer
+# and coded absence as -1; a value never seen in training also codes to -1.
+CATEGORICAL_COLUMNS = ("ProductCD", "card4", "card6", "P_emaildomain", "R_emaildomain")
+ABSENT_CATEGORY_CODE = -1.0
 
 
 class PreprocessingValidationError(Exception):
@@ -24,6 +46,7 @@ class PreprocessingService:
         self.medians: np.ndarray = np.array([], dtype=np.float32)
         self.means: np.ndarray = np.array([], dtype=np.float32)
         self.stds: np.ndarray = np.array([], dtype=np.float32)
+        self.categorical_indices: set = set()
         self.is_initialized: bool = False
         self.initialize()
 
@@ -51,6 +74,10 @@ class PreprocessingService:
                 self.feature_columns = json.load(f)
 
             self.feature_indices = {col: i for i, col in enumerate(self.feature_columns)}
+            self.categorical_indices = {
+                self.feature_indices[c] for c in CATEGORICAL_COLUMNS
+                if c in self.feature_indices
+            }
 
             npz_data = np.load(npz_path, allow_pickle=True)
             self.medians = npz_data["medians"].astype(np.float32)
@@ -73,6 +100,18 @@ class PreprocessingService:
         except Exception as e:
             logger.error(f"Failed to initialize PreprocessingService: {str(e)}")
             self.is_initialized = False
+
+    def fill_value_for(self, col_idx: int) -> float:
+        """What an absent value becomes for this column.
+
+        A category gets -1, which is the code training used for absent. Everything
+        else gets that column's training median. Using the median for a category is
+        the defect described at the top of this file: the median of a code table is
+        the commonest category, so it states the opposite of what is known.
+        """
+        if col_idx in self.categorical_indices:
+            return ABSENT_CATEGORY_CODE
+        return float(self.medians[col_idx])
 
     def get_default_sample_dict(self) -> Dict[str, float]:
         """Returns a baseline transaction with the verified median values."""
@@ -112,7 +151,7 @@ class PreprocessingService:
 
                 # 1. Missing or None or empty string -> Impute with median
                 if val is None or val == "" or (isinstance(val, float) and np.isnan(val)):
-                    imputed_val = float(self.medians[col_idx])
+                    imputed_val = self.fill_value_for(col_idx)
                     raw_matrix[row_idx, col_idx] = imputed_val
                     sanitized_row[col_name] = imputed_val
                     continue
@@ -130,7 +169,7 @@ class PreprocessingService:
                         )
                 elif isinstance(val, (int, float, np.integer, np.floating)):
                     if np.isnan(val) or np.isinf(val):
-                        imputed_val = float(self.medians[col_idx])
+                        imputed_val = self.fill_value_for(col_idx)
                         raw_matrix[row_idx, col_idx] = imputed_val
                         sanitized_row[col_name] = imputed_val
                         continue
